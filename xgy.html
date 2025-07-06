@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星野光卡片</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* 星空背景 */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 4s infinite ease-in-out;
+        }
+        
+        /* 卡片容器 */
+        .loli-card {
+            position: relative;
+            width: 380px;
+            height: 520px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+                        0 0 0 1px rgba(255, 182, 193, 0.1) inset;
+            overflow: hidden;
+            z-index: 10;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .loli-card:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 25px 60px rgba(255, 105, 180, 0.3),
+                        0 0 0 2px rgba(255, 182, 193, 0.3) inset;
+        }
+        
+        /* 卡片顶部装饰 */
+        .card-header {
+            height: 120px;
+            background: linear-gradient(120deg, rgba(255, 182, 193, 0.4), rgba(255, 105, 180, 0.2));
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px 24px 0 0;
+        }
+        
+        .header-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
+            background-size: 80px 80px;
+            opacity: 0.4;
+        }
+        
+        /* 女孩图片容器 */
+        .girl-container {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, rgba(255, 223, 232, 0.2), rgba(255, 255, 255, 0.1));
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .girl-container:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 105, 180, 0.4);
+        }
+        
+        .girl-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: transform 0.5s ease;
+        }
+        
+        .girl-container:hover .girl-image {
+            transform: scale(1.08);
+        }
+        
+        /* 卡片内容 */
+        .card-content {
+            padding: 150px 30px 30px;
+            text-align: center;
+            position: relative;
+            z-index: 15;
+        }
+        
+        .girl-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffb6c1;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(255, 182, 193, 0.5);
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .girl-name:hover {
+            text-shadow: 0 0 15px rgba(255, 182, 193, 0.8);
+            transform: scale(1.05);
+        }
+        
+        .girl-title {
+            font-size: 18px;
+            color: #a8d0e6;
+            margin-bottom: 25px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+        
+        .girl-description {
+            color: #e6e6e6;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            font-size: 16px;
+            font-weight: 300;
+            padding: 0 15px;
+            text-align: center;
+        }
+        
+        /* 属性标签 */
+        .attributes {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .attribute {
+            padding: 8px 20px;
+            background: rgba(255, 182, 193, 0.15);
+            border-radius: 20px;
+            color: #ffdfe8;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+        
+        .attribute:hover {
+            background: rgba(255, 182, 193, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.2);
+        }
+        
+        /* 装饰元素 */
+        .decoration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 182, 193, 0.15);
+            animation: float 8s infinite ease-in-out;
+        }
+        
+        /* 卡片底部 */
+        .card-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: repeating-linear-gradient(
+                45deg,
+                #ffb6c1,
+                #ffb6c1 10px,
+                #ff69b4 10px,
+                #ff69b4 20px
+            );
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 -5px 20px rgba(255, 105, 180, 0.3);
+        }
+        
+        /* 玻璃罐特效 */
+        .jar-effect {
+            position: absolute;
+            width: 80px;
+            height: 100px;
+            bottom: 30px;
+            right: 30px;
+            border-radius: 40% 40% 30% 30%;
+            background: rgba(173, 216, 230, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(173, 216, 230, 0.3),
+                        inset 0 0 20px rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(2px);
+            overflow: hidden;
+            z-index: 25;
+        }
+        
+        .jar-glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+            animation: glow 3s infinite alternate;
+        }
+        
+        .star-in-jar {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+            animation: twinkle 2s infinite ease-in-out;
+        }
+        
+        /* 动画效果 */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+        
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+        
+        @keyframes glow {
+            0% {
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0.7;
+            }
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .loli-card {
+                width: 340px;
+                height: 480px;
+            }
+            
+            .girl-container {
+                width: 180px;
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- 卡片容器 -->
+    <div class="loli-card">
+        <!-- 装饰元素 -->
+        <div class="decoration" id="decoration"></div>
+        
+        <!-- 卡片顶部 -->
+        <div class="card-header">
+            <div class="header-overlay"></div>
+        </div>
+        
+        <!-- 女孩图片容器 -->
+        <div class="girl-container">
+            <img src="https://i.ibb.co/svXnQ16C/jimeng-2025-07-07-8775-cute-anime-loli-1-3-5yo-girl-chestnu.jpg" alt="星野光" class="girl-image">
+        </div>
+        
+        <!-- 玻璃罐特效 -->
+        <div class="jar-effect">
+            <div class="jar-glow"></div>
+        </div>
+        
+        <!-- 卡片内容 -->
+        <div class="card-content">
+            <h2 class="girl-name">星野 光</h2>
+            <div class="girl-title">星空下的思念</div>
+            <p class="girl-description">
+                5岁的星野光总是抱着她的星星罐子，收集夜空中坠落的星光。<br>
+                她相信，只要集满一百颗星星，就能把迷路的爷爷和莉子姐姐带回家。
+            </p>
+            
+            <div class="attributes">
+                <div class="attribute">小熊睡衣</div>
+                <div class="attribute">小鸡拖鞋</div>
+                <div class="attribute">星星收集者</div>
+                <div class="attribute">纯真治愈</div>
+            </div>
+        </div>
+        
+        <!-- 卡片底部 -->
+        <div class="card-footer"></div>
+    </div>
+
+    <script>
+        // 创建星空背景
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 150;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // 随机位置和大小
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // 随机动画延迟
+                star.style.animationDelay = `${Math.random() * 4}s`;
+                
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // 创建漂浮气泡
+        function createBubbles() {
+            const decoration = document.getElementById('decoration');
+            const bubbleCount = 8;
+            
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                
+                // 随机大小
+                const size = Math.random() * 40 + 20;
+                bubble.style.width = `${size}px`;
+                bubble.style.height = `${size}px`;
+                
+                // 随机位置
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.top = `${Math.random() * 100}%`;
+                
+                // 随机动画延迟
+                bubble.style.animationDelay = `${Math.random() * 8}s`;
+                
+                decoration.appendChild(bubble);
+            }
+        }
+        
+        // 创建玻璃罐中的星星
+        function createJarStars() {
+            const jar = document.querySelector('.jar-effect');
+            const starCount = 15;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star-in-jar');
+                
+                // 随机位置
+                star.style.left = `${Math.random() * 80 + 10}%`;
+                star.style.top = `${Math.random() * 80 + 10}%`;
+                
+                // 随机动画延迟
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                
+                jar.appendChild(star);
+            }
+        }
+        
+        // 创建飘落花瓣
+        function createFallingPetals() {
+            const body = document.body;
+            const petalCount = 20;
+            
+            for (let i = 0; i < petalCount; i++) {
+                const petal = document.createElement('div');
+                petal.innerHTML = '❀';
+                petal.style.position = 'absolute';
+                petal.style.fontSize = `${Math.random() * 20 + 15}px`;
+                petal.style.color = `rgba(255, 182, 193, ${Math.random() * 0.5 + 0.3})`;
+                petal.style.left = `${Math.random() * 100}%`;
+                petal.style.top = `-50px`;
+                petal.style.opacity = '0';
+                petal.style.pointerEvents = 'none';
+                petal.style.zIndex = '0';
+                petal.style.userSelect = 'none';
+                
+                // 设置动画
+                const duration = Math.random() * 10 + 10;
+                const delay = Math.random() * 5;
+                petal.style.animation = `fall ${duration}s linear ${delay}s infinite`;
+                
+                body.appendChild(petal);
+            }
+        }
+        
+        // 初始化特效
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            createBubbles();
+            createJarStars();
+            createFallingPetals();
+            
+            // 添加卡片悬停效果
+            const card = document.querySelector('.loli-card');
+            
+            card.addEventListener('mousemove', (e) => {
+                const cardRect = card.getBoundingClientRect();
+                const x = e.clientX - cardRect.left;
+                const y = e.clientY - cardRect.top;
+                
+                const centerX = cardRect.width / 2;
+                const centerY = cardRect.height / 2;
+                
+                const rotateY = (x - centerX) / 25;
+                const rotateX = (centerY - y) / 25;
+                
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-15px)`;
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(-15px) rotateX(5deg) rotateY(5deg)';
+                setTimeout(() => {
+                    card.style.transform = 'translateY(0)';
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
