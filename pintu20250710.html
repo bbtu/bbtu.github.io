@@ -14,7 +14,6 @@
             touch-action: none; /* Disable panning and zooming on touch devices */
         }
         .puzzle-piece, .puzzle-slot {
-            /* Image is set dynamically in JS */
             background-image: url('https://i.ibb.co/6czMjqck/f8063a0ce58fa7485d334d2ebc3cea6b.png');
             transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
             box-sizing: border-box;
@@ -30,7 +29,7 @@
         }
         .puzzle-slot {
             border: 1px dashed #9ca3af;
-            background-color: rgba(255, 255, 255, 0.2);
+            /* Removed background-color for a blank look */
         }
         .piece-placed {
             border: 1px solid #4ade80; /* Green border for correctly placed piece */
@@ -84,7 +83,8 @@
                  <!-- Puzzle Board -->
                 <div class="w-full max-w-lg">
                     <h2 class="text-xl font-semibold text-center mb-2 text-gray-700">拼图区域</h2>
-                    <div id="puzzle-board" class="grid grid-cols-6 grid-rows-6 w-full aspect-square bg-gray-300 rounded-lg shadow-inner">
+                    <!-- Changed background to be lighter for a "blank" feel -->
+                    <div id="puzzle-board" class="grid grid-cols-6 grid-rows-6 w-full aspect-square bg-gray-200 rounded-lg shadow-inner">
                         <!-- Puzzle slots will be generated here -->
                     </div>
                 </div>
@@ -140,8 +140,6 @@
         // --- Drag & Drop State ---
         let draggedPiece = null;
         let isDragging = false;
-        let startX = 0;
-        let startY = 0;
 
         // --- Game Setup ---
         function initializeGame() {
@@ -155,7 +153,6 @@
             gameArea.classList.add('flex');
             modal.classList.add('hidden');
             
-            // Get the dynamic size of the puzzle board after it's rendered
             const puzzleSize = puzzleBoard.clientWidth;
 
             createPuzzleSlots();
@@ -187,7 +184,6 @@
                 const col = i % COLS;
                 const row = Math.floor(i / COLS);
 
-                // Set size and background dynamically
                 piece.style.width = `${pieceWidth}px`;
                 piece.style.height = `${pieceHeight}px`;
                 piece.style.backgroundSize = `${puzzleSize}px ${puzzleSize}px`;
@@ -212,7 +208,7 @@
             }, 1000);
         }
 
-        // --- Drag and Drop Logic ---
+        // --- Drag and Drop Logic (Modified for instant drag) ---
         function addDragListeners() {
             document.addEventListener('pointerdown', onPointerDown);
             document.addEventListener('pointermove', onPointerMove);
@@ -221,27 +217,24 @@
         
         function onPointerDown(e) {
             if (!gameActive || !e.target.classList.contains('puzzle-piece') || e.target.classList.contains('piece-placed')) return;
+            
+            // Start dragging immediately on click
+            isDragging = true;
             draggedPiece = e.target;
-            isDragging = false;
-            startX = e.pageX;
-            startY = e.pageY;
+
+            // Move piece to body to avoid clipping issues and set up for dragging
+            document.body.appendChild(draggedPiece);
+            draggedPiece.style.position = 'absolute';
+            draggedPiece.style.pointerEvents = 'none';
+            draggedPiece.classList.add('dragging');
+            
+            // Position the piece under the cursor
+            movePiece(e.pageX, e.pageY);
         }
 
         function onPointerMove(e) {
-            if (!draggedPiece) return;
-            if (!isDragging) {
-                const dx = e.pageX - startX;
-                const dy = e.pageY - startY;
-                if (Math.sqrt(dx * dx + dy * dy) > 5) { // Start dragging after 5px move
-                    isDragging = true;
-                    // Move piece to body to avoid clipping issues
-                    document.body.appendChild(draggedPiece);
-                    draggedPiece.style.position = 'absolute';
-                    draggedPiece.style.pointerEvents = 'none';
-                    draggedPiece.classList.add('dragging');
-                }
-            }
-            if (isDragging) {
+            // Only move the piece if dragging has started
+            if (isDragging && draggedPiece) {
                 movePiece(e.pageX, e.pageY);
             }
         }
@@ -255,18 +248,23 @@
         }
 
         function onPointerUp(e) {
-            if (!draggedPiece) return;
-            if (isDragging) {
-                draggedPiece.style.pointerEvents = 'auto';
-                draggedPiece.classList.remove('dragging');
-                const dropTarget = getDropTarget(e.clientX, e.clientY);
-                
-                if (dropTarget && dropTarget.dataset.index === draggedPiece.dataset.index) {
-                    placePiece(draggedPiece, dropTarget);
-                } else {
-                    returnPiece(draggedPiece);
-                }
+            if (!isDragging || !draggedPiece) {
+                // Reset state if it wasn't a proper drag
+                draggedPiece = null;
+                isDragging = false;
+                return;
             }
+
+            draggedPiece.style.pointerEvents = 'auto';
+            draggedPiece.classList.remove('dragging');
+            const dropTarget = getDropTarget(e.clientX, e.clientY);
+            
+            if (dropTarget && dropTarget.dataset.index === draggedPiece.dataset.index) {
+                placePiece(draggedPiece, dropTarget);
+            } else {
+                returnPiece(draggedPiece);
+            }
+            
             draggedPiece = null;
             isDragging = false;
         }
@@ -282,11 +280,9 @@
         }
         
         function placePiece(piece, slot) {
-            // Reset styles before appending
             piece.style.position = 'static';
             piece.style.left = '';
             piece.style.top = '';
-            // Let the grid cell control the size
             piece.style.width = '100%';
             piece.style.height = '100%';
             
@@ -300,7 +296,6 @@
         }
 
         function returnPiece(piece) {
-            // Restore original pixel size when returning to container
             const puzzleSize = puzzleBoard.clientWidth;
             const pieceWidth = puzzleSize / COLS;
             const pieceHeight = puzzleSize / ROWS;
@@ -355,19 +350,20 @@
         // --- Event Listeners ---
         startBtn.addEventListener('click', initializeGame);
         playAgainBtn.addEventListener('click', resetGame);
-        // Optional: Add a resize listener to restart the game if the window size changes
-        // This prevents layout issues if the device is rotated mid-game.
+        
         let resizeTimer;
         window.addEventListener('resize', () => {
             if (!gameActive) return;
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
-                alert('窗口大小已改变，游戏将重新开始以适应新布局。');
-                resetGame();
-                initializeGame();
+                // Using a custom modal instead of alert
+                const confirmRestart = confirm('窗口大小已改变，游戏将重新开始以适应新布局。确定吗？');
+                if(confirmRestart) {
+                    resetGame();
+                    initializeGame();
+                }
             }, 500);
         });
-
 
     </script>
 </body>
