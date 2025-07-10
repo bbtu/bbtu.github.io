@@ -14,15 +14,14 @@
             touch-action: none; /* Disable panning and zooming on touch devices */
         }
         .puzzle-piece, .puzzle-slot {
-            /* Updated with the new user-provided image */
+            /* Image is set dynamically in JS */
             background-image: url('https://i.ibb.co/6czMjqck/f8063a0ce58fa7485d334d2ebc3cea6b.png');
-            background-size: 600px 600px;
             transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
             box-sizing: border-box;
-            border: 1px solid #ddd; /* Add a light border to every piece */
         }
         .puzzle-piece {
             cursor: grab;
+            border: 1px solid #ddd; /* Add a light border to every piece */
         }
         .puzzle-piece:active {
             cursor: grabbing;
@@ -44,15 +43,14 @@
         #pieces-container {
             border: 2px dashed #d1d5db;
             background-color: #f9fafb;
-            min-height: 200px;
         }
     </style>
 </head>
-<body class="bg-gray-200 flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <div id="game-container" class="w-full max-w-7xl mx-auto p-6 bg-white rounded-2xl shadow-xl">
+    <div id="game-container" class="w-full max-w-7xl mx-auto p-4 md:p-6 bg-white rounded-2xl shadow-xl">
         <div class="text-center mb-6">
-            <h1 class="text-4xl font-bold text-gray-800">宝可梦拼图挑战</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">宝可梦拼图挑战</h1>
             <p class="text-gray-600 mt-2">在规定时间内完成皮卡丘拼图！</p>
         </div>
 
@@ -74,24 +72,26 @@
         </div>
 
         <!-- Main Game Area -->
-        <div id="game-area" class="hidden">
-            <div class="flex justify-center mb-6">
+        <div id="game-area" class="hidden flex-col items-center gap-8">
+            <div class="flex justify-center">
                 <div>
-                    <h2 class="text-2xl font-semibold text-center mb-4 text-gray-700">示意图</h2>
-                    <!-- Updated with the new user-provided image -->
-                    <img src="https://i.ibb.co/6czMjqck/f8063a0ce58fa7485d334d2ebc3cea6b.png" alt="Pikachu Preview" class="w-[250px] h-[250px] object-cover rounded-lg shadow-md border-4 border-blue-400">
+                    <h2 class="text-xl font-semibold text-center mb-2 text-gray-700">示意图</h2>
+                    <img id="preview-img" src="https://i.ibb.co/6czMjqck/f8063a0ce58fa7485d334d2ebc3cea6b.png" alt="Pikachu Preview" class="w-32 h-32 md:w-48 md:h-48 object-cover rounded-lg shadow-md border-4 border-blue-400">
                 </div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="mx-auto">
-                    <h2 class="text-2xl font-semibold text-center mb-4 text-gray-700">拼图区域</h2>
-                    <div id="puzzle-board" class="grid grid-cols-6 grid-rows-6 w-[600px] h-[600px] bg-gray-300 rounded-lg shadow-inner">
+            
+            <div class="w-full flex flex-col items-center gap-8">
+                 <!-- Puzzle Board -->
+                <div class="w-full max-w-lg">
+                    <h2 class="text-xl font-semibold text-center mb-2 text-gray-700">拼图区域</h2>
+                    <div id="puzzle-board" class="grid grid-cols-6 grid-rows-6 w-full aspect-square bg-gray-300 rounded-lg shadow-inner">
                         <!-- Puzzle slots will be generated here -->
                     </div>
                 </div>
-                <div class="mx-auto">
-                    <h2 class="text-2xl font-semibold text-center mb-4 text-gray-700">碎片区域</h2>
-                    <div id="pieces-container" class="p-4 rounded-lg flex flex-wrap gap-2 items-start justify-center w-[600px] h-[600px] overflow-y-auto">
+                <!-- Pieces Container -->
+                <div class="w-full max-w-lg">
+                    <h2 class="text-xl font-semibold text-center mb-2 text-gray-700">碎片区域</h2>
+                    <div id="pieces-container" class="p-2 md:p-4 rounded-lg flex flex-wrap gap-2 items-start justify-center w-full h-96 overflow-y-auto">
                         <!-- Puzzle pieces will be generated here -->
                     </div>
                 </div>
@@ -100,11 +100,11 @@
     </div>
 
     <!-- Modal for Win/Lose Message -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50">
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden z-50 p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl text-center transform transition-all scale-95">
-            <h2 id="modal-title" class="text-4xl font-bold mb-4"></h2>
+            <h2 id="modal-title" class="text-3xl md:text-4xl font-bold mb-4"></h2>
             <p id="modal-message" class="text-lg text-gray-600 mb-6"></p>
-            <div id="modal-secret-number" class="hidden text-7xl font-bold text-purple-600 my-4 animate-pulse"></div>
+            <div id="modal-secret-number" class="hidden text-6xl md:text-7xl font-bold text-purple-600 my-4 animate-pulse"></div>
             <button id="play-again-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg text-xl shadow-lg transition-transform transform hover:scale-105 mt-4">
                 再玩一次
             </button>
@@ -116,8 +116,6 @@
         const PIECE_COUNT = 36;
         const COLS = 6;
         const ROWS = 6;
-        const PUZZLE_WIDTH = 600;
-        const PUZZLE_HEIGHT = 600;
         const TIME_LIMIT = 600; // 10 minutes in seconds
 
         // --- DOM Elements ---
@@ -154,9 +152,14 @@
             piecesContainer.innerHTML = '';
             startBtn.classList.add('hidden');
             gameArea.classList.remove('hidden');
+            gameArea.classList.add('flex');
             modal.classList.add('hidden');
+            
+            // Get the dynamic size of the puzzle board after it's rendered
+            const puzzleSize = puzzleBoard.clientWidth;
+
             createPuzzleSlots();
-            createPuzzlePieces();
+            createPuzzlePieces(puzzleSize);
             updateCounter();
             startTimer();
             addDragListeners();
@@ -171,20 +174,25 @@
             }
         }
 
-        function createPuzzlePieces() {
-            const pieceWidth = PUZZLE_WIDTH / COLS;
-            const pieceHeight = PUZZLE_HEIGHT / ROWS;
+        function createPuzzlePieces(puzzleSize) {
+            const pieceWidth = puzzleSize / COLS;
+            const pieceHeight = puzzleSize / ROWS;
             const pieces = [];
             for (let i = 0; i < PIECE_COUNT; i++) {
                 const piece = document.createElement('div');
                 piece.id = `piece-${i}`;
                 piece.dataset.index = i;
                 piece.classList.add('puzzle-piece');
+                
                 const col = i % COLS;
                 const row = Math.floor(i / COLS);
+
+                // Set size and background dynamically
                 piece.style.width = `${pieceWidth}px`;
                 piece.style.height = `${pieceHeight}px`;
+                piece.style.backgroundSize = `${puzzleSize}px ${puzzleSize}px`;
                 piece.style.backgroundPosition = `-${col * pieceWidth}px -${row * pieceHeight}px`;
+                
                 pieces.push(piece);
             }
             pieces.sort(() => Math.random() - 0.5).forEach(p => piecesContainer.appendChild(p));
@@ -226,6 +234,8 @@
                 const dy = e.pageY - startY;
                 if (Math.sqrt(dx * dx + dy * dy) > 5) { // Start dragging after 5px move
                     isDragging = true;
+                    // Move piece to body to avoid clipping issues
+                    document.body.appendChild(draggedPiece);
                     draggedPiece.style.position = 'absolute';
                     draggedPiece.style.pointerEvents = 'none';
                     draggedPiece.classList.add('dragging');
@@ -272,9 +282,14 @@
         }
         
         function placePiece(piece, slot) {
+            // Reset styles before appending
             piece.style.position = 'static';
             piece.style.left = '';
             piece.style.top = '';
+            // Let the grid cell control the size
+            piece.style.width = '100%';
+            piece.style.height = '100%';
+            
             slot.appendChild(piece);
             piece.classList.add('piece-placed');
             correctPieces++;
@@ -285,9 +300,17 @@
         }
 
         function returnPiece(piece) {
+            // Restore original pixel size when returning to container
+            const puzzleSize = puzzleBoard.clientWidth;
+            const pieceWidth = puzzleSize / COLS;
+            const pieceHeight = puzzleSize / ROWS;
+
             piece.style.position = 'static';
             piece.style.left = '';
             piece.style.top = '';
+            piece.style.width = `${pieceWidth}px`;
+            piece.style.height = `${pieceHeight}px`;
+
             piecesContainer.appendChild(piece);
         }
 
@@ -320,6 +343,7 @@
         function resetGame() {
             gameActive = false;
             startBtn.classList.remove('hidden');
+            gameArea.classList.remove('flex');
             gameArea.classList.add('hidden');
             modal.classList.add('hidden');
             modal.firstElementChild.style.transform = 'scale(0.95)';
@@ -331,6 +355,19 @@
         // --- Event Listeners ---
         startBtn.addEventListener('click', initializeGame);
         playAgainBtn.addEventListener('click', resetGame);
+        // Optional: Add a resize listener to restart the game if the window size changes
+        // This prevents layout issues if the device is rotated mid-game.
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            if (!gameActive) return;
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                alert('窗口大小已改变，游戏将重新开始以适应新布局。');
+                resetGame();
+                initializeGame();
+            }, 500);
+        });
+
 
     </script>
 </body>
