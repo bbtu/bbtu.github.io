@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝可梦剧本杀：森林的永恒沉睡</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="宝可梦剧本杀：森林的永恒沉睡，一场充满解谜与冒险的在线互动游戏。">
+    <meta name="keywords" content="宝可梦, 剧本杀, 森林解谜, 游戏, puzzle, larp, pokemon">
+    
+    <!-- Resource Preloading -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Orbitron:wght@400;700&display=swap" as="style">
+    <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js" as="script">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ========== 全局样式 ========== */
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --dark: #292F36;
+            --light: #F7F9FC;
+            --accent: #FFD166;
+            --pokemon-red: #FF0000;
+            --pokemon-blue: #3B4CCA;
+            --pokemon-yellow: #FFDE00;
+            /* CSS Variable Optimization */
+            --box-shadow-main: 0 5px 15px rgba(0, 0, 0, 0.2);
+            --box-shadow-heavy: 0 20px 50px rgba(0, 0, 0, 0.6);
+            --border-radius-main: 15px;
+            --border-radius-large: 20px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Noto Sans SC', 'Microsoft YaHei', sans-serif; }
+        body { background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); background-size: 400% 400%; animation: gradientBG 15s ease infinite; color: var(--light); min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .game-container { width: 100%; max-width: 1200px; background: rgba(25, 30, 40, 0.95); border-radius: var(--border-radius-large); overflow: hidden; box-shadow: var(--box-shadow-heavy); min-height: 85vh; display: flex; flex-direction: column; backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.1); }
+        .game-header { background: linear-gradient(to right, var(--pokemon-red), var(--pokemon-blue)); padding: 20px; text-align: center; position: relative; border-bottom: 5px solid var(--pokemon-yellow); }
+        .game-title { font-size: 2.5rem; font-weight: 800; text-shadow: 0 3px 6px rgba(0,0,0,0.4); margin-bottom: 5px; color: white; letter-spacing: 1px; }
+        .game-subtitle { font-size: 1.2rem; opacity: 0.9; font-weight: 500; margin-bottom: 15px; }
+        .game-content { display: flex; flex: 1; min-height: 600px; }
+        .scene-selector { width: 250px; background: rgba(30, 35, 45, 0.9); padding: 20px; border-right: 3px solid var(--accent); overflow-y: auto; }
+        .scene-selector-title { font-size: 1.4rem; margin-bottom: 25px; text-align: center; color: var(--accent); padding-bottom: 10px; border-bottom: 2px solid rgba(255,255,255,0.1); }
+        .scene-list { display: flex; flex-direction: column; gap: 12px; }
+        .scene-item { padding: 15px; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 15px; font-weight: 500; opacity: 0.6; background: rgba(255,255,255,0.05); }
+        .scene-item.unlocked { opacity: 0.8; }
+        .scene-item.unlocked:hover { opacity: 1; transform: translateX(5px); background: rgba(255,255,255,0.1); }
+        .scene-item.active { opacity: 1; transform: translateX(10px); box-shadow: var(--box-shadow-main); color: white; }
+        .scene-item i { font-size: 1.2rem; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(0,0,0,0.2); }
+        .scene-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; }
+        .content-card { background: rgba(40, 50, 65, 0.8); border-radius: var(--border-radius-main); padding: 25px; box-shadow: var(--box-shadow-main); border-left: 5px solid; transition: transform 0.3s ease; }
+        .content-card:hover { transform: translateY(-5px); }
+        .card-title { font-size: 1.8rem; margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .card-text { line-height: 1.8; margin-bottom: 20px; }
+        .choices-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px; }
+        .choice-btn { padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; background: rgba(52, 152, 219, 0.8); color: white; }
+        .choice-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: var(--box-shadow-main); background: rgba(52, 152, 219, 1); }
+        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .game-footer { padding: 15px 30px; background: rgba(0, 0, 0, 0.4); display: flex; justify-content: space-between; align-items: center; border-top: 2px solid rgba(255,255,255,0.1); }
+        .timer { display: flex; align-items: center; gap: 12px; background: rgba(231, 76, 60, 0.2); padding: 10px 20px; border-radius: 30px; font-weight: 700; font-size: 1.2rem; border: 1px solid #e74c3c; }
+        .timer i { color: #e74c3c; font-size: 1.5rem; }
+        
+        .puzzle-container { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .puzzle-title { color: var(--accent); font-size: 1.2rem; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; }
+        
+        .rotary-lock-container { display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; padding: 20px 0; }
+        .rotary-dial { position: relative; width: 100px; height: 100px; }
+        .rotary-pointer { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 15px solid var(--accent); position: absolute; top: -15px; left: 50%; transform: translateX(-50%); }
+        .rotary-ring { width: 100px; height: 100px; border: 5px solid #7f8c8d; border-radius: 50%; position: relative; cursor: pointer; user-select: none; }
+        .rotary-ring-inner { width: 100%; height: 100%; position: relative; transition: transform 0.2s linear; }
+        .rotary-symbol { position: absolute; width: 40px; height: 40px; left: 50%; top: 50%; margin-left: -20px; margin-top: -20px; font-size: 2rem; display: flex; justify-content: center; align-items: center; }
+
+        .potion-mixer { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 20px; text-align: center; }
+        .potion-ingredient h4 { font-size: 1.2rem; }
+        .potion-ingredient .count { font-size: 2rem; margin: 10px 0; font-weight: bold; color: var(--accent); }
+        .ingredient-controls { display: flex; justify-content: center; gap: 10px; }
+        .control-btn { font-size: 1.5rem; width: 40px; height: 40px; }
+
+        /* Jigsaw Puzzle Styles */
+        .jigsaw-container { display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap; gap: 20px; }
+        .jigsaw-board { display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); border: 2px dashed var(--accent); padding: 5px; background: rgba(0,0,0,0.2); }
+        .jigsaw-slot { width: 100px; height: 100px; border: 1px solid #7f8c8d; background-color: rgba(0,0,0,0.3); background-size: 300px 300px; background-repeat: no-repeat; }
+        .jigsaw-slot.correct { border: 2px solid var(--accent); box-shadow: 0 0 10px var(--accent), inset 0 0 10px var(--accent); }
+        .jigsaw-pieces { display: flex; flex-wrap: wrap; gap: 10px; max-width: 320px; }
+        .jigsaw-piece { width: 100px; height: 100px; background-size: 300px 300px; border: 2px solid var(--light); cursor: grab; transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s; }
+        .jigsaw-piece.placed { display: none; }
+        .jigsaw-piece.dragging { 
+            opacity: 0.7; 
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        /* Wire Puzzle Styles */
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .circuit-wire { transition: all 0.2s ease-in-out; cursor: pointer; }
+        .circuit-wire-group:hover .circuit-wire { stroke-width: 14px; filter: drop-shadow(0 0 8px currentColor); }
+        .circuit-wire-group.cut .circuit-wire { animation: fadeOutCut 0.5s forwards; }
+        @keyframes fadeOutCut {
+            from { opacity: 1; stroke-width: 10px; }
+            to { opacity: 0.2; stroke-width: 3px; }
+        }
+        .circuit-terminal { transition: all 0.2s ease-in-out; }
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        .tool-btn.active { transform: scale(1.1); box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.3); }
+        .tool-btn:disabled { filter: grayscale(80%); cursor: not-allowed; opacity: 0.5; }
+        
+        @keyframes pulse-glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(2.0) drop-shadow(0 0 8px currentColor); }
+        }
+        @keyframes pulse-absorb {
+            0%, 100% { filter: brightness(1.2) drop-shadow(0 0 6px #fff); }
+            50% { filter: brightness(2.5) drop-shadow(0 0 12px #fff); }
+        }
+        .circuit-wire-group.connected .circuit-wire {
+            animation: pulse-glow 1.5s ease-in-out infinite;
+        }
+        .circuit-wire-group.absorbed .circuit-wire {
+            animation: pulse-absorb 1.2s ease-in-out infinite;
+        }
+
+        #circuit-board-container {
+            background-image: 
+                linear-gradient(rgba(113, 128, 150, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(113, 128, 150, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-content { background: rgba(45, 55, 72, 0.95); padding: 30px; border-radius: var(--border-radius-main); max-width: 90%; width: 500px; max-height: 80vh; overflow-y: auto; position: relative; border: 2px solid rgba(255, 255, 255, 0.2); }
+        .modal-close-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .modal-title { font-size: 1.8rem; color: var(--accent); margin-bottom: 20px; text-align: center; }
+        .clue-list-item { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: background 0.3s; display: flex; align-items: center; gap: 15px; }
+        .clue-list-item:hover { background: rgba(255,255,255,0.2); }
+        .clue-detail-icon { font-size: 4rem; color: var(--accent); text-align: center; margin-bottom: 15px; }
+        .clue-detail-desc { font-size: 1.1rem; line-height: 1.7; text-align: left; }
+        .clue-detail-desc .fas { margin: 0 5px; }
+        .attribute-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; text-align: left; margin-top: 15px; }
+        .attribute-item { background: rgba(0,0,0,0.2); padding: 8px; border-radius: 5px; display: flex; align-items: center; gap: 10px; }
+        .attribute-item svg { flex-shrink: 0; }
+        
+        #music-toggle-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
+        #music-toggle-btn:hover { opacity: 1; }
+
+        .progress-container { width: 80%; max-width: 400px; margin: 0 auto; }
+        .progress-bar-label { font-size: 0.9rem; text-align: center; margin-bottom: 5px; opacity: 0.8; }
+        .progress-bar { width: 100%; background-color: rgba(0,0,0,0.3); border-radius: 20px; padding: 3px; }
+        .progress-bar-fill { height: 12px; background: linear-gradient(90deg, var(--secondary), var(--accent)); border-radius: 20px; width: 0%; transition: width 0.5s ease-in-out; }
+        .progress-bar-text { text-align: center; font-weight: bold; margin-top: 5px; }
+
+        /* Effect Styles */
+        .fullscreen-effect { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; pointer-events: none; display: flex; justify-content: center; align-items: center; }
+        .success-flash { background: rgba(46, 204, 113, 0.5); animation: flash-out 1s forwards; }
+        .clue-get-flash { background: radial-gradient(circle, rgba(255, 210, 102, 0.6) 0%, rgba(255, 210, 102, 0) 70%); animation: flash-out 0.8s forwards; }
+        .effect-text { color: white; font-size: 3rem; font-weight: bold; text-shadow: 0 0 15px black; animation: zoom-in-out 1s forwards; }
+        @keyframes flash-out { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes zoom-in-out { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+        .type-chart-grid {
+            display: grid;
+            grid-template-columns: 40px repeat(18, 1fr);
+            gap: 2px;
+            background-color: #4a5568;
+            padding: 2px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .type-chart-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1 / 1;
+            font-weight: bold;
+            font-size: 14px;
+            background-color: #2d3748;
+            border-radius: 4px;
+            min-width: 30px;
+        }
+
+        /* Responsive Design with em units */
+        @media (max-width: 62em) { /* ~992px */
+            .game-content { flex-direction: column; }
+            .scene-selector { width: 100%; border-right: none; border-bottom: 3px solid var(--accent); }
+            .scene-list { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+        }
+        @media (max-width: 48em) { /* ~768px */
+            .game-footer { flex-direction: column; gap: 15px; }
+            .game-footer .timer { order: -1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1 class="game-title">宝可梦剧本杀</h1>
+            <p class="game-subtitle">森林的永恒沉睡</p>
+            <div class="progress-container">
+                <div class="progress-bar-label">总体解密进度</div>
+                <div class="progress-bar">
+                    <div id="progress-bar-fill" class="progress-bar-fill"></div>
+                </div>
+                <div id="progress-bar-text" class="progress-bar-text">0%</div>
+            </div>
+        </header>
+        
+        <div class="game-content">
+            <aside class="scene-selector">
+                <h2 class="scene-selector-title">调查进度</h2>
+                <div class="scene-list"></div>
+            </aside>
+            <main class="scene-content"></main>
+        </div>
+        
+        <footer class="game-footer">
+            <div class="timer">
+                <i class="fas fa-clock"></i>
+                <span id="timer-display">25:00</span>
+            </div>
+            <button class="choice-btn" onclick="App.core.handleChoice(event, {action: 'show_clues'})">
+                <i class="fas fa-book"></i> 查看线索
+            </button>
+            <button id="music-toggle-btn" onclick="App.soundManager.toggleMusic()">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        </footer>
+    </div>
+    
+    <div id="modal-container"></div>
+    <div id="effects-container"></div>
+
+    <footer class="text-center text-gray-400 text-xs py-4 px-2">
+        <p>【天使动漫2025年夏日派对】【第四届后花园暑假联合活动・宠物中心区】</p>
+        <p>《宝可梦剧本杀：森林的永恒沉睡》</p>
+        <p>（活动时间：2025.7.15~2025.8.17 GMT+8）</p>
+        <p>活动出版人：月光呀月光</p>
+    </footer>
+
+    <script>
+    // ================================================================================= //
+    //                                                                                   //
+    //                         宝可梦剧本杀：森林的永恒沉睡 (重构优化版)                      //
+    //                                                                                   //
+    // ================================================================================= //
+
+    const App = {
+        // =============================================================================
+        // MODULE: CONFIG (常量与配置模块)
+        // -----------------------------------------------------------------------------
+        // 将所有硬编码的常量集中管理，便于维护和修改。
+        // =============================================================================
+        config: {
+            TIMER_START_SECONDS: 25 * 60,
+            PENALTY_SECONDS: {
+                LOCK_FAIL: 5 * 60,
+                POTION_FAIL: 3 * 60,
+                CIRCUIT_FAIL: 2 * 60,
+            },
+            KONAMI_CODE: ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'],
+            SOUNDS: {
+                CLICK: 'click',
+                GET_CLUE: 'getClue',
+                PUZZLE_SUCCESS: 'puzzleSuccess',
+                PUZZLE_FAIL: 'puzzleFail',
+                PENALTY: 'penalty',
+            },
+            PUZZLE_TYPES: {
+                LOCK: 'lock_puzzle',
+                POTION: 'potion_puzzle',
+                JIGSAW: 'jigsaw_puzzle',
+                CIRCUIT: 'circuit_puzzle',
+            },
+            SCENE_IDS: {
+                CHAPTER1: 'chapter1',
+                CHAPTER1_KENTA: 'chapter1_kenta',
+                CHAPTER2: 'chapter2',
+                CHAPTER3: 'chapter3',
+                CHAPTER4: 'chapter4',
+                CHAPTER5: 'chapter5',
+            }
+        },
+
+        // =============================================================================
+        // MODULE: DATA (游戏数据模块)
+        // =============================================================================
+        data: {
+            sceneOrder: ['chapter1', 'chapter2', 'chapter3', 'chapter4', 'chapter5'],
+            scenes: {
+                'chapter1': { id: 'chapter1', name: '第一章：迷雾中的觉醒', icon: 'fa-cloud-sun', content: `<div class="content-card"><h2 class="card-title"><i class="fas fa-bed"></i> 迷雾中的觉醒</h2><p class="card-text">你在一阵刺骨的寒意中醒来，发现自己躺在常青森林深处的苔藓地上。浓密的白色迷雾像活物般在古树间流动。四周静得可怕，连虫鸣都消失了。<br><br>"头...好痛...这是哪里？"你挣扎着坐起，记忆如碎片般涌现——你记得自己是来参加"森林守护者"选拔赛的新人训练家。但此刻，本该热闹的营地空无一人，只有七位训练家像雕像般沉睡在睡袋中，脸上凝固着惊恐的表情。<br><br>你突然发现自己的精灵球不见了！这时，手腕上的探险手表发出红光，投射出一段全息信息：<br><b>紧急警报！森林时间场异常。源点：时拉比栖息地。若不修复，所有生命将陷入永恒沉睡。</b></p><div class="choices-grid"><button class="choice-btn" onclick="App.core.handleChoice(event, { target: 'chapter1_kenta' })"><i class="fas fa-user"></i> 检查唯一醒着的人</button><button class="choice-btn" data-clue-id="map_fragment" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'map_fragment' })"><i class="fas fa-map-marked-alt"></i> 收集地图碎片</button><button class="choice-btn" data-clue-id="trainer_pokedex" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'trainer_pokedex' })"><i class="fas fa-mobile-alt"></i> 检查沉睡的训练家</button><button class="choice-btn" data-clue-id="burnt_note" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'burnt_note' })"><i class="fas fa-fire"></i> 检查篝火灰烬</button></div></div>` },
+                'chapter1_kenta': { id: 'chapter1_kenta', name: '第一章：迷雾中的觉醒', icon: 'fa-cloud-sun', content: `<div class="content-card"><h2 class="card-title"><i class="fas fa-user-shield"></i> 大木博士的助手</h2><p class="card-text">你注意到唯一醒着的人——大木博士的助手健太，他被藤蔓缠在树上，背包被密码锁锁住。<br><br>健太：“谢天谢地你醒了！迷雾出现时，我们看到黑影闪过...我的研究资料...啊！”他突然痛苦地捂住额头：“记忆在消失...密码...背包密码是...”</p><div id="puzzle-container"></div><div class="choices-grid"><button class="choice-btn" data-clue-id="kenta_note" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'kenta_note' })"><i class="fas fa-sticky-note"></i> 寻找线索</button><button id="examine-lock-btn" class="choice-btn" disabled onclick="App.core.handleChoice(event, { action: 'render_puzzle', payload: 'lock_puzzle' })"><i class="fas fa-lock"></i> 研究密码锁</button><button class="choice-btn" onclick="App.core.switchScene('chapter1')"><i class="fas fa-arrow-left"></i> 返回营地</button></div></div>` },
+                'chapter2': { id: 'chapter2', name: '第二章：森林的呼唤', icon: 'fa-tree', content: `` },
+                'chapter3': { id: 'chapter3', name: '第三章：遗迹之谜', icon: 'fa-landmark', content: `<div class="content-card"><h2 class="card-title"><i class="fas fa-landmark"></i> 遗迹之谜</h2><p class="card-text">穿过瀑布后的密道，古老遗迹震撼呈现。布满青苔的石墙上，旋转的齿轮装置守护着镶嵌三色宝石的祭坛。残缺的壁画描绘着时拉比与古代人类共同守护森林的场景。</p><div id="puzzle-container"></div><div class="choices-grid"><button class="choice-btn" id="get-riddle-btn" data-clue-id="ruins_riddle" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'ruins_riddle' })"><i class="fas fa-scroll"></i> 研究石台谜语</button><button class="choice-btn" id="fix-mural-btn" disabled onclick="App.core.handleChoice(event, { action: 'render_puzzle', payload: 'jigsaw_puzzle' })"><i class="fas fa-puzzle-piece"></i> 尝试修复壁画</button></div></div>` },
+                'chapter4': { id: 'chapter4', name: '第四章：黑暗队的阴谋', icon: 'fa-mask', content: `<div class="content-card"><h2 class="card-title"><i class="fas fa-bolt"></i> 黑暗队的阴谋</h2><p class="card-text">追击战中，你们闯入黑暗队的临时基地。布满电缆的仪器中央，三色宝石在能量场中旋转。控制台屏幕显示："时空干扰装置 激活进度 65%"。<br><br>黑暗队科学家：“哈哈哈！时拉比的力量将属于黑暗队！上吧，黑鲁加！”</p><div id="puzzle-container"></div><div class="choices-grid"><button class="choice-btn" id="get-manual-btn" data-clue-id="circuit_manual" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'circuit_manual' })"><i class="fas fa-book-open"></i> 寻找操作指南</button><button class="choice-btn" id="get-chart-btn" data-clue-id="attribute_chart" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'attribute_chart' })"><i class="fas fa-sitemap"></i> 找到属性图表</button><button class="choice-btn" id="fix-circuit-btn" disabled onclick="App.core.handleChoice(event, { action: 'render_puzzle', payload: 'circuit_puzzle' })"><i class="fas fa-plug"></i> 修复电路</button></div></div>` },
+                'chapter5': { id: 'chapter5', name: '第五章：最终抉择', icon: 'fa-hourglass-end', content: `<div class="content-card"><h2 class="card-title"><i class="fas fa-gem"></i> 最终抉择</h2><p class="card-text">穿越发光的时空裂缝，你来到森林核心。巨大的时拉比悬浮在结晶树中，三色宝石在它胸前形成枷锁。黑暗队长站在控制台前：“见证新纪元吧！”<br><br>控制台显示：<br><b>时之仪式：1. 放置三色宝石 2. 输入守护者密码 3. 选择：汲取力量/解放时拉比</b></p><div class="puzzle-container"><h3 class="puzzle-title">输入守护者密码</h3><input type="text" id="final-password" class="w-full p-2 text-center bg-gray-900 border-2 border-gray-600 rounded-lg text-white text-2xl tracking-[1rem]" maxlength="4" placeholder="----"></div><div class="choices-grid"><button class="choice-btn" onclick="App.core.handleChoice(event, { action: 'final_choice', payload: { choice: 'perfect', password: document.getElementById('final-password').value } })"><i class="fas fa-sun"></i> 解放时拉比</button><button class="choice-btn" onclick="App.core.handleChoice(event, { action: 'final_choice', payload: { choice: 'bad', password: document.getElementById('final-password').value } })"><i class="fas fa-skull-crossbones"></i> 汲取力量</button></div></div>` },
+            },
+            clues: {
+                'map_fragment': { name: '地图残片', description: '常青森林地图的残片。背面潦草地画着营地布局，并圈出了三个地点：**篝火(🔥)、水井(💧)和一棵古树(🌿)**。', icon: 'fa-map-marked-alt' },
+                'kenta_note': { name: '健太的笔记', description: '属性相生备忘录：火→水→草→火... 背包密码：起始火位。提示：水克火，草克水。', icon: 'fa-sticky-note' },
+                'trainer_pokedex': { name: '精灵图鉴', description: '从沉睡的训练家口袋里找到的图鉴，屏幕上显示着一组符号：**⚡🦅❄️**。这会是密码吗？', icon: 'fa-mobile-alt' },
+                'burnt_note': { name: '烧焦的便签', description: '在篝火的灰烬里，你找到一张几乎烧毁的便签，上面似乎写着数字：**4-7-1**。其中**7**被圈了出来。', icon: 'fa-fire' },
+                'potion_recipe': { name: '树皮上的配方', description: '生命调和术：**日之叶、月之泪、星之粉**。配方的顺序暗示了药材的能量强度，最强的需要最多。过量则毒，不足则无效。', icon: 'fa-scroll' },
+                'dark_team_log1': { name: '黑暗队日志1', description: '...时拉比的力量超乎预期...催化剂需要**不多不少正好6个单位**的能量才能稳定...需要三色宝石...遗迹钥匙在...', icon: 'fa-file-invoice' },
+                'ancient_amulet': { name: '古老吊坠', description: '皮卡丘佩戴的青铜吊坠，刻着🌀⚡🌪️符号。靠近遗迹时会震动。', icon: 'fa-gem' },
+                'ruins_riddle': { name: '壁画描述', description: '你在石台上发现一段描述：“当远古的守护者重现其守护森林的姿态时，遗迹的秘密才会揭示。” 这似乎是指向那面残破的壁画。', icon: 'fa-question-circle' },
+                'circuit_manual': { name: '操作指南', description: '（这份指南似乎每次都会变化）紧急修复协议：<span id="circuit-clue-text"></span>', icon: 'fa-book-open' },
+                'attribute_chart': { name: '属性图表', description: `一张贴在墙上的图表，标明了每个图标对应的属性。`, icon: 'fa-sitemap' },
+            },
+            circuitV2Data: {
+                POKEMON: [
+                    { name: '三首恶龙', types: ['Dark', 'Dragon'], ability: 'Levitate', abilityName: '漂浮', abilityDescription: '因为飘浮在空中，地面属性的能量对它似乎不起作用。' },
+                    { name: '自爆磁怪', types: ['Electric', 'Steel'], ability: 'Sturdy', abilityName: '结实', abilityDescription: '结实的身体能承受住致命一击。任何会造成超强伤害的能量，似乎都会被削弱。' },
+                    { name: '拉普拉斯', types: ['Water', 'Ice'], ability: 'Water Absorb', abilityName: '储水', abilityDescription: '该宝可梦似乎能将水属性的能量化为己用，而不是单纯地抵抗它。' },
+                    { name: '雷伊布', types: ['Electric'], ability: 'Volt Absorb', abilityName: '蓄电', abilityDescription: '该宝可梦似乎能将电属性的能量化为己用，而不是单纯地抵抗它。' },
+                    { name: '卡比兽', types: ['Normal'], ability: 'Thick Fat', abilityName: '厚脂肪', abilityDescription: '厚厚的脂肪可以抵御寒冷和炎热，对火属性和冰属性的能量有更强的耐性。' },
+                    { name: '风速狗', types: ['Fire'], ability: 'Flash Fire', abilityName: '引火', abilityDescription: '该宝可梦似乎能将火属性的能量化为己用，而不是单纯地抵抗它。' },
+                    { name: '引路草', types: ['Grass', 'Normal'], ability: 'Sap Sipper', abilityName: '食草', abilityDescription: '该宝可梦似乎能将草属性的能量化为己用，而不是单纯地抵抗它。' },
+                ],
+                PUZZLE_SOLUTIONS: {
+                    '三首恶龙': { cut: ['Ice', 'Fighting', 'Bug', 'Fairy'], connect: ['Fire', 'Water', 'Electric', 'Grass', 'Ghost', 'Dark'], absorb: [], immune: ['Ground', 'Psychic'] },
+                    '自爆磁怪': { cut: [], connect: ['Normal', 'Grass', 'Ice', 'Bug', 'Rock', 'Dragon', 'Fairy', 'Flying', 'Steel', 'Electric', 'Psychic'], absorb: [], immune: ['Poison'] },
+                    '拉普拉斯': { cut: ['Electric', 'Grass', 'Fighting', 'Rock'], connect: ['Ice'], absorb: ['Water'], immune: [] },
+                    '雷伊布': { cut: ['Ground'], connect: ['Flying', 'Steel'], absorb: ['Electric'], immune: [] },
+                    '卡比兽': { cut: ['Fighting'], connect: ['Fire', 'Ice'], absorb: [], immune: ['Ghost'] },
+                    '风速狗': { cut: ['Water', 'Ground', 'Rock'], connect: ['Grass', 'Ice', 'Bug', 'Steel', 'Fairy'], absorb: ['Fire'], immune: [] },
+                    '引路草': { cut: ['Fire', 'Ice', 'Poison', 'Flying', 'Bug'], connect: ['Water', 'Electric', 'Ground'], absorb: ['Grass'], immune: ['Ghost'] }
+                },
+                TYPE_COLORS: { Normal: '#A8A77A', Fire: '#EE8130', Water: '#6390F0', Electric: '#F7D02C', Grass: '#7AC74C', Ice: '#96D9D6', Fighting: '#C22E28', Poison: '#A33EA1', Ground: '#E2BF65', Flying: '#A98FF3', Psychic: '#F95587', Bug: '#A6B91A', Rock: '#B6A136', Ghost: '#735797', Dragon: '#6F35FC', Dark: '#705746', Steel: '#B7B7CE', Fairy: '#D685AD' },
+                TYPE_NAMES: { Normal: '一般', Fire: '火', Water: '水', Electric: '电', Grass: '草', Ice: '冰', Fighting: '格斗', Poison: '毒', Ground: '地面', Flying: '飞行', Psychic: '超能', Bug: '虫', Rock: '岩石', Ghost: '幽灵', Dragon: '龙', Dark: '恶', Steel: '钢', Fairy: '妖精' },
+                TYPE_CHART: {
+                    'Normal': { 'Fighting': 2, 'Ghost': 0 },
+                    'Fire': { 'Water': 2, 'Ground': 2, 'Rock': 2, 'Fire': 0.5, 'Grass': 0.5, 'Ice': 0.5, 'Bug': 0.5, 'Steel': 0.5, 'Fairy': 0.5 },
+                    'Water': { 'Electric': 2, 'Grass': 2, 'Fire': 0.5, 'Water': 0.5, 'Ice': 0.5, 'Steel': 0.5 },
+                    'Electric': { 'Ground': 2, 'Electric': 0.5, 'Flying': 0.5, 'Steel': 0.5 },
+                    'Grass': { 'Fire': 2, 'Ice': 2, 'Poison': 2, 'Flying': 2, 'Bug': 2, 'Water': 0.5, 'Electric': 0.5, 'Grass': 0.5, 'Ground': 0.5 },
+                    'Ice': { 'Fire': 2, 'Fighting': 2, 'Rock': 2, 'Steel': 2, 'Ice': 0.5 },
+                    'Fighting': { 'Flying': 2, 'Psychic': 2, 'Fairy': 2, 'Bug': 0.5, 'Rock': 0.5, 'Dark': 0.5 },
+                    'Poison': { 'Ground': 2, 'Psychic': 2, 'Grass': 0.5, 'Fighting': 0.5, 'Poison': 0.5, 'Bug': 0.5, 'Fairy': 0.5 },
+                    'Ground': { 'Water': 2, 'Grass': 2, 'Ice': 2, 'Electric': 0, 'Poison': 0.5, 'Rock': 0.5 },
+                    'Flying': { 'Electric': 2, 'Ice': 2, 'Rock': 2, 'Ground': 0, 'Grass': 0.5, 'Fighting': 0.5, 'Bug': 0.5 },
+                    'Psychic': { 'Bug': 2, 'Ghost': 2, 'Dark': 2, 'Fighting': 0.5, 'Psychic': 0.5 },
+                    'Bug': { 'Fire': 2, 'Flying': 2, 'Rock': 2, 'Grass': 0.5, 'Fighting': 0.5, 'Ground': 0.5 },
+                    'Rock': { 'Water': 2, 'Grass': 2, 'Fighting': 2, 'Ground': 2, 'Steel': 2, 'Normal': 0.5, 'Fire': 0.5, 'Poison': 0.5, 'Flying': 0.5 },
+                    'Ghost': { 'Ghost': 2, 'Dark': 2, 'Normal': 0, 'Fighting': 0, 'Poison': 0.5, 'Bug': 0.5 },
+                    'Dragon': { 'Ice': 2, 'Dragon': 2, 'Fairy': 2, 'Fire': 0.5, 'Water': 0.5, 'Electric': 0.5, 'Grass': 0.5 },
+                    'Dark': { 'Fighting': 2, 'Bug': 2, 'Fairy': 2, 'Psychic': 0, 'Ghost': 0.5, 'Dark': 0.5 },
+                    'Steel': { 'Fire': 2, 'Fighting': 2, 'Ground': 2, 'Poison': 0, 'Normal': 0.5, 'Grass': 0.5, 'Ice': 0.5, 'Flying': 0.5, 'Psychic': 0.5, 'Bug': 0.5, 'Rock': 0.5, 'Dragon': 0.5, 'Steel': 0.5, 'Fairy': 0.5 },
+                    'Fairy': { 'Poison': 2, 'Steel': 2, 'Dragon': 0, 'Fighting': 0.5, 'Bug': 0.5, 'Dark': 0.5 }
+                },
+                TYPE_SVG_ICONS: {
+                    Normal: `<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" fill-opacity="0.5" /><circle cx="12" cy="12" r="4" />`, Fire: `<path d="M11.15 2.08C8.47 3.4 7.22 6.5 8.5 9.1c1.5 3 4.5 4.5 7.5 3s4.5-4.5 3-7.5c-1.2-2.4-4-3.6-6.85-2.52zM12 2c-3.15 1.5-5.15 5-4 8 1.5 4 5.5 5.5 9.5 4s5.5-5.5 4-9.5C20.15 6.15 16.15 3.5 12 2z" />`, Water: `<path d="M12 2a10 10 0 1 0 10 10c0-5.52-4.48-10-10-10zm0 18c-3.53 0-6.47-2.88-6.47-6.47 0-2.05 1.02-3.88 2.52-5.05C9.58 7.02 12 4.47 12 4.47s2.42 2.55 3.95 3.95c1.5 1.17 2.52 3 2.52 5.05C18.47 17.12 15.53 20 12 20z" />`, Electric: `<path d="M13 2L3 14h9l-1 8 11-12h-9z" />`, Grass: `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15V9h4v8h-4z M8 7h8v2H8z" transform="rotate(-45 12 12)" />`, Ice: `<path d="M12 2l-2.5 5h5L12 2zm0 20l2.5-5h-5L12 22zM2 12l5-2.5v5L2 12zm20 0l-5-2.5v5L22 12zM6.4 6.4l3.1 1.25-1.25 3.1L6.4 6.4zm11.2 11.2l-3.1-1.25 1.25-3.1 3.1 1.25zM6.4 17.6l1.25-3.1-3.1-1.25 1.85 4.35zM17.6 6.4l-1.25 3.1 3.1 1.25-1.85-4.35z" />`, Fighting: `<path d="M18 7c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2s2-.9 2-2V9c0-1.1-.9-2-2-2zM8 7c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2s2-.9 2-2V9c0-1.1-.9-2-2-2z" />`, Poison: `<circle cx="12" cy="12" r="10" /><circle cx="9" cy="10" r="1.5" /><circle cx="15" cy="10" r="1.5" /><path d="M16 14c-2 2-6 2-8 0" />`, Ground: `<path d="M2 12h20v2H2zM4 16h16v2H4zM6 20h12v2H6zM12 2l-4 8h8z" />`, Flying: `<path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12s4.48 10 10 10 10-4.48 10-10zm-10 8c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" /><path d="M12 6c-2.67 0-5 1.34-6.47 3.32.53.27 1.1.48 1.7.64C8.16 8.82 9.97 8 12 8s3.84.82 4.77 1.96c.6-.16 1.17-.37 1.7-.64C17 7.34 14.67 6 12 6z" />`, Psychic: `<path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 14a6 6 0 1 1 0-12 6 6 0 0 1 0 12z" /><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />`, Bug: `<path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" /><path d="M16 8a4 4 0 1 0-8 0 4 4 0 0 0 8 0zM8 16a4 4 0 1 0 8 0 4 4 0 0 0-8 0z" />`, Rock: `<path d="M12 2L2 7l10 5 10-5-10-5zm0 12.5L4.5 10 2 11.25 12 17l10-5.75L19.5 10 12 14.5zM12 22l-7.5-4.25v-1.5L12 20l7.5-3.75v1.5L12 22z" />`, Ghost: `<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /><circle cx="9.5" cy="10.5" r="1.5" /><circle cx="14.5" cy="10.5" r="1.5" /><path d="M9 16c.83 1.33 2.17 2 3 2s2.17-.67 3-2H9z" />`, Dragon: `<path d="M10.25 3.75 9 2 4.5 8l4.5 6 1.25-1.75L7.5 8zM13.75 3.75 15 2l4.5 6-4.5 6-1.25-1.75L16.5 8z" />`, Dark: `<path d="M12 2a10 10 0 1 0 10 10c0-5.52-4.48-10-10-10zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" /><path d="M12 7.5a4.5 4.5 0 0 0 0 9 4.5 4.5 0 0 0 0-9z" />`, Steel: `<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" /><path d="M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12zm0 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />`, Fairy: `<path d="m22 9.24-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.4-.38L12 6.1l1.68 4.02 4.4.38-3.32 2.88 1 4.28L12 15.4z" />`
+                }
+            }
+        },
+
+        // =============================================================================
+        // MODULE: STATE (游戏状态模块)
+        // =============================================================================
+        state: {
+            currentScene: null,
+            unlockedScenes: [],
+            inventory: [],
+            timer: 0,
+            timerInterval: null,
+            puzzles: {
+                lock_solved: false,
+                potion_solved: false,
+                jigsaw_solved: false,
+                circuit_solved: false,
+                lock_rings: [0, 0, 0, 0], 
+                potion_mix: { 'herb1': 0, 'herb2': 0, 'herb3': 0, 'herb4': 0, 'herb5': 0 },
+                potion_ratio: [], 
+                jigsaw_placed: 0,
+                circuit: {
+                    wires: [], 
+                    solution: {},
+                    correctActions: [],
+                    pokemon: null,
+                    selectedTool: 'cutter',
+                    actions: {},
+                }
+            },
+            konamiIndex: 0,
+            isFirstInteraction: true,
+            gameEnded: false,
+            isActionInProgress: false, 
+            eventListeners: [], // 用于存储需要清理的事件监听器
+        },
+
+        // =============================================================================
+        // MODULE: DOM (DOM元素缓存模块)
+        // =============================================================================
+        dom: {
+            sceneListEl: null,
+            sceneContentEl: null,
+            timerDisplayEl: null,
+            modalContainerEl: null,
+            effectsContainerEl: null,
+            cacheDOM() {
+                this.sceneListEl = document.querySelector('.scene-list');
+                this.sceneContentEl = document.querySelector('.scene-content');
+                this.timerDisplayEl = document.getElementById('timer-display');
+                this.modalContainerEl = document.getElementById('modal-container');
+                this.effectsContainerEl = document.getElementById('effects-container');
+            }
+        },
+
+        // =============================================================================
+        // MODULE: CORE (核心逻辑模块)
+        // =============================================================================
+        core: {
+            /**
+             * 初始化游戏
+             */
+            init() {
+                try {
+                    App.dom.cacheDOM();
+                    App.state.timer = App.config.TIMER_START_SECONDS;
+                    App.state.unlockedScenes = [App.config.SCENE_IDS.CHAPTER1];
+                    
+                    App.ui.updateOverallProgress();
+                    App.ui.updateSceneList();
+                    this.switchScene(App.config.SCENE_IDS.CHAPTER1);
+                    this.startTimer();
+                    
+                    const konamiHandler = (e) => this.handleKonamiCode(e);
+                    App.utils.addEventListener(window, 'keydown', konamiHandler);
+                } catch (error) {
+                    console.error('初始化游戏时发生错误:', error);
+                    document.body.innerHTML = '<div class="text-white text-center p-8">游戏加载失败，请刷新页面重试。</div>';
+                }
+            },
+
+            /**
+             * 切换场景
+             * @param {string} sceneId - 要切换到的场景 ID
+             */
+            switchScene(sceneId) {
+                if (sceneId === App.config.SCENE_IDS.CHAPTER2 && !App.state.puzzles.potion_ratio.length) {
+                    App.puzzles.potion.generate();
+                }
+                if (sceneId === App.config.SCENE_IDS.CHAPTER4 && App.state.puzzles.circuit.wires.length === 0) {
+                     App.puzzles.circuit.generate();
+                }
+                const scene = App.data.scenes[sceneId];
+                if (!scene) { console.error(`Scene with id ${sceneId} not found!`); return; }
+                if (App.data.sceneOrder.includes(sceneId) && !App.state.unlockedScenes.includes(sceneId)) {
+                    App.ui.showNotice("请先完成当前章节的谜题！", "var(--accent)");
+                    return;
+                }
+                App.state.currentScene = sceneId;
+                App.dom.sceneContentEl.innerHTML = scene.content;
+                App.ui.updateSceneList();
+                this.checkCluePrerequisites();
+            },
+
+            /**
+             * 处理玩家动作选择
+             * @param {Event} event - DOM 事件对象
+             * @param {object} choice - 玩家的选择对象
+             */
+            handleChoice(event, choice) {
+                if (App.state.isFirstInteraction) {
+                    App.soundManager.startMusic();
+                    App.state.isFirstInteraction = false;
+                }
+                App.soundManager.play(App.config.SOUNDS.CLICK);
+                if (choice.target) {
+                    this.switchScene(choice.target);
+                } else if (choice.action) {
+                    this.handleAction(event, choice.action, choice.payload);
+                }
+            },
+
+            /**
+             * 根据动作名称分发任务
+             * @param {Event} event - DOM 事件对象
+             * @param {string} actionName - 动作名称
+             * @param {*} payload - 附带数据
+             */
+            handleAction(event, actionName, payload) {
+                if (App.state.isActionInProgress && !['change_ingredient'].includes(actionName)) return;
+
+                const actions = {
+                    'get_clue': () => this.addClue(event.target, payload),
+                    'render_puzzle': () => App.ui.renderPuzzle(payload),
+                    'check_lock': () => App.puzzles.lock.checkSolution(),
+                    'change_ingredient': () => App.puzzles.potion.changeIngredient(payload.item, payload.amount),
+                    'mix_potion': () => App.puzzles.potion.checkMix(),
+                    'show_clues': () => App.ui.renderClueListModal(),
+                    'final_choice': () => App.ui.showEnding(payload),
+                    'show_rules': () => App.puzzles.circuit.showRules(),
+                    'show_pokedex': () => App.puzzles.circuit.showPokedex(),
+                    'show_type_chart': () => App.puzzles.circuit.showTypeChart(),
+                    'show_type_legend': () => App.puzzles.circuit.showTypeLegend(),
+                };
+                
+                if (actions[actionName]) {
+                    actions[actionName]();
+                }
+            },
+
+            addClue(buttonElement, clueId) {
+                if (!App.state.inventory.includes(clueId)) {
+                    App.state.inventory.push(clueId);
+                    const clue = App.data.clues[clueId];
+                    App.soundManager.showClue(clue.name);
+                    if(buttonElement) { buttonElement.disabled = true; }
+                    this.checkCluePrerequisites();
+                } else {
+                    App.ui.showNotice('你已经调查过这里了。', 'var(--secondary)');
+                }
+            },
+
+            checkCluePrerequisites() {
+                const checks = {
+                    [App.config.SCENE_IDS.CHAPTER1_KENTA]: { clues: ['map_fragment', 'kenta_note', 'trainer_pokedex', 'burnt_note'], buttonId: 'examine-lock-btn' },
+                    [App.config.SCENE_IDS.CHAPTER2]: { clues: ['potion_recipe', 'dark_team_log1'], buttonId: 'mix-potion-btn' },
+                    [App.config.SCENE_IDS.CHAPTER3]: { clues: ['ruins_riddle'], buttonId: 'fix-mural-btn' },
+                    [App.config.SCENE_IDS.CHAPTER4]: { clues: ['circuit_manual', 'attribute_chart'], buttonId: 'fix-circuit-btn' }
+                };
+
+                const currentSceneId = App.state.currentScene;
+                const check = checks[currentSceneId];
+
+                if (check) {
+                    const hasAllClues = check.clues.every(clue => App.state.inventory.includes(clue));
+                    const btn = document.getElementById(check.buttonId);
+                    if (btn && hasAllClues) {
+                        btn.disabled = false;
+                        App.ui.showNotice('你似乎集齐了所有线索，可以尝试解谜了。', 'var(--accent)');
+                    }
+                }
+            },
+            
+            startTimer() {
+                if (App.state.timerInterval) return;
+                App.state.timerInterval = setInterval(() => {
+                    if (App.state.timer <= 0) {
+                        clearInterval(App.state.timerInterval);
+                        App.ui.showEnding({ choice: 'bad' }); // Pass object for consistency
+                        return;
+                    }
+                    App.state.timer--;
+                    const minutes = Math.floor(App.state.timer / 60);
+                    const seconds = App.state.timer % 60;
+                    App.dom.timerDisplayEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            },
+            
+            unlockNextChapter(chapterId) {
+                if (!App.state.unlockedScenes.includes(chapterId)) {
+                    App.state.unlockedScenes.push(chapterId);
+                }
+                setTimeout(() => {
+                    this.switchScene(chapterId);
+                }, 2000); 
+            },
+
+            checkAndUnlockNextPhase() {
+                const { potion_solved, jigsaw_solved } = App.state.puzzles;
+                if (potion_solved && jigsaw_solved) {
+                    App.ui.showNotice('森林的两股异常能量似乎都平息了，一条通往黑暗队基地的路显现了出来！', 'var(--accent)');
+                    this.unlockNextChapter(App.config.SCENE_IDS.CHAPTER4);
+                } else if (potion_solved || jigsaw_solved) {
+                    App.ui.showNotice('你感觉到森林中一股能量平息了，但似乎还有另一处地方需要你的帮助。', 'var(--secondary)');
+                }
+            },
+            
+            applyPenalty(penaltyAmount) {
+                App.soundManager.play(App.config.SOUNDS.PENALTY);
+                App.state.timer -= penaltyAmount;
+                if (App.state.timer < 0) App.state.timer = 0;
+                App.ui.showNotice(`操作失误！时间被惩罚了 ${penaltyAmount / 60} 分钟！`, '#e74c3c');
+            },
+
+            handleKonamiCode(e) {
+                if (e.key.toLowerCase() === App.config.KONAMI_CODE[App.state.konamiIndex]) {
+                    App.state.konamiIndex++;
+                    if (App.state.konamiIndex === App.config.KONAMI_CODE.length) {
+                        App.soundManager.showSuccess('时间倒流！');
+                        App.state.timer += 120;
+                        App.state.konamiIndex = 0;
+                    }
+                } else {
+                    App.state.konamiIndex = 0;
+                }
+            },
+
+            cleanupEventListeners() {
+                App.utils.removeAllEventListeners();
+            }
+        },
+
+        // =============================================================================
+        // MODULE: UI (界面渲染模块)
+        // =============================================================================
+        ui: {
+            updateOverallProgress() {
+                const puzzles = App.state.puzzles;
+                const solvedCount = Object.values(puzzles).filter(p => typeof p === 'boolean' && p).length;
+                const totalPuzzles = 4;
+                const progress = (solvedCount / totalPuzzles) * 100;
+
+                const fillEl = document.getElementById('progress-bar-fill');
+                const textEl = document.getElementById('progress-bar-text');
+
+                if (fillEl) fillEl.style.width = `${progress}%`;
+                if (textEl) textEl.textContent = `${Math.round(progress)}%`;
+            },
+
+            updateSceneList() {
+                const fragment = document.createDocumentFragment();
+                App.data.sceneOrder.forEach(sceneId => {
+                    const scene = App.data.scenes[sceneId];
+                    const isUnlocked = App.state.unlockedScenes.includes(sceneId);
+                    const isActive = App.state.currentScene === sceneId || (App.state.currentScene && App.state.currentScene.startsWith(sceneId));
+                    const itemEl = document.createElement('div');
+                    itemEl.className = `scene-item ${isUnlocked ? 'unlocked' : ''} ${isActive ? 'active' : ''}`;
+                    itemEl.innerHTML = `<i class="fas ${scene.icon}"></i> <span>${scene.name}</span>`;
+                    if (isUnlocked) {
+                        itemEl.onclick = () => App.core.switchScene(sceneId);
+                    } else {
+                        itemEl.style.cursor = 'not-allowed';
+                    }
+                    fragment.appendChild(itemEl);
+                });
+                App.dom.sceneListEl.innerHTML = '';
+                App.dom.sceneListEl.appendChild(fragment);
+            },
+
+            showNotice(text, color) {
+                const container = App.dom.sceneContentEl.querySelector('.content-card, #circuit-v2-container');
+                if(container) {
+                     let noticeEl = container.querySelector('.notice-text');
+                     if (!noticeEl) {
+                         noticeEl = document.createElement('p');
+                         noticeEl.className = 'card-text text-center font-bold notice-text mt-4';
+                         container.appendChild(noticeEl);
+                     }
+                     noticeEl.style.color = color;
+                     noticeEl.innerHTML = `<i class="fas fa-info-circle"></i> ${text}`;
+                }
+            },
+
+            renderPuzzle(puzzleId) {
+                const container = document.getElementById('puzzle-container');
+                if (!container) return;
+                
+                const puzzleRenderers = {
+                    [App.config.PUZZLE_TYPES.LOCK]: App.puzzles.lock.render,
+                    [App.config.PUZZLE_TYPES.POTION]: App.puzzles.potion.render,
+                    [App.config.PUZZLE_TYPES.JIGSAW]: App.puzzles.jigsaw.render,
+                    [App.config.PUZZLE_TYPES.CIRCUIT]: App.puzzles.circuit.render,
+                };
+
+                if (puzzleRenderers[puzzleId]) {
+                    container.innerHTML = puzzleRenderers[puzzleId]() || '';
+                    if (puzzleId === App.config.PUZZLE_TYPES.LOCK) App.puzzles.lock.addDragListeners();
+                    if (puzzleId === App.config.PUZZLE_TYPES.JIGSAW) App.puzzles.jigsaw.addDragListeners();
+                    if (puzzleId === App.config.PUZZLE_TYPES.CIRCUIT) App.puzzles.circuit.initializeUI();
+                }
+            },
+
+            showGenericModal(title, content, backButton = false, sizeClass = 'max-w-2xl') {
+                 this.closeModal();
+                 const modalOverlay = document.createElement('div');
+                 modalOverlay.className = 'modal-overlay';
+                 
+                 const modalContent = document.createElement('div');
+                 modalContent.className = `modal-content ${sizeClass}`;
+                 
+                 let closeButtonHtml = backButton 
+                     ? `<button class="modal-close-btn" onclick="App.ui.closeModal(true)">&larr; 返回</button>`
+                     : `<button class="modal-close-btn" onclick="App.ui.closeModal()">×</button>`;
+
+                 modalContent.innerHTML = `${closeButtonHtml}<h2 class="modal-title">${title}</h2>${content}`;
+                 modalOverlay.appendChild(modalContent);
+                 modalOverlay.onclick = (e) => { if (e.target === modalOverlay) this.closeModal(backButton); };
+                 App.dom.modalContainerEl.appendChild(modalOverlay);
+            },
+
+            renderClueListModal() {
+                let cluesHTML = `<div class="space-y-2">`;
+                if (App.state.inventory.length === 0) {
+                    cluesHTML += `<p class="card-text text-center">暂无线索</p>`;
+                } else {
+                    cluesHTML += App.state.inventory.map(clueId => {
+                        const clue = App.data.clues[clueId];
+                        return `<div class="clue-list-item" onclick="App.ui.renderClueDetailModal('${clueId}')"><i class="fas ${clue.icon}"></i> ${clue.name}</div>`;
+                    }).join('');
+                }
+                cluesHTML += `</div>`;
+                this.showGenericModal("已获得的线索", cluesHTML, false, 'max-w-lg');
+            },
+
+            renderClueDetailModal(clueId) {
+                const clue = App.data.clues[clueId];
+                let description = clue.description;
+
+                if (clueId === 'attribute_chart') {
+                    const allTypes = Object.keys(App.data.circuitV2Data.TYPE_NAMES);
+                    description += `<div class="attribute-grid">${allTypes.map(t_key => `<div class="attribute-item"><svg width="24" height="24" viewBox="0 0 24 24" class="mr-2" style="color: ${App.data.circuitV2Data.TYPE_COLORS[t_key]}">${App.data.circuitV2Data.TYPE_SVG_ICONS[t_key]}</svg>${App.data.circuitV2Data.TYPE_NAMES[t_key]}</div>`).join('')}</div>`;
+                }
+
+                const content = `
+                    <div class="clue-detail-icon"><i class="fas ${clue.icon}"></i></div>
+                    <div class="clue-detail-desc">${description}</div>
+                `;
+                this.showGenericModal(clue.name, content, true, 'max-w-lg');
+            },
+
+            closeModal(reopenList = false) {
+                App.dom.modalContainerEl.innerHTML = '';
+                if (reopenList) {
+                    this.renderClueListModal();
+                }
+            },
+
+            showEnding(payload) {
+                if (App.state.gameEnded) return;
+                App.state.gameEnded = true;
+
+                clearInterval(App.state.timerInterval);
+                App.core.cleanupEventListeners();
+
+                let endingContent = '';
+                const { choice, password } = payload;
+
+                switch(choice) {
+                    case 'perfect':
+                        if (password === '1116') {
+                            // Best ending
+                            App.soundManager.play(App.config.SOUNDS.PUZZLE_SUCCESS);
+                            endingContent = `<div class="content-card"><h2 class="card-title" style="color: var(--accent);"><i class="fas fa-crown"></i> 真正的结局</h2><p class="card-text">随着正确的密码“1116”输入，装置发出了柔和的光芒。你选择解放时拉比，它不仅挣脱了枷锁，还将黑暗队长的邪恶能量彻底净化。森林恢复了往日的生机，所有沉睡者都苏醒过来，甚至忘记了那段可怕的经历。时拉比感激地看着你，在你手腕上留下了一个闪耀着时间光辉的印记，你成为了森林真正的传奇守护者。</p></div>`;
+                        } else {
+                            // Good ending
+                            App.soundManager.play(App.config.SOUNDS.PUZZLE_SUCCESS);
+                            endingContent = `<div class="content-card"><h2 class="card-title"><i class="fas fa-sun"></i> 完美结局</h2><p class="card-text">你选择解放时拉比。虽然密码不正确，但你的善意依然触动了时拉比。它挣脱枷锁，发出治愈光波。迷雾消散，所有沉睡者苏醒。时拉比轻触你额头，留下绿叶印记：“森林永远铭记守护者...”但黑暗队长的身影消失在了森林深处，留下了一丝不安。</p></div>`;
+                        }
+                        break;
+                    case 'bad':
+                    default:
+                         App.soundManager.play(App.config.SOUNDS.PUZZLE_FAIL);
+                         endingContent = `<div class="content-card"><h2 class="card-title"><i class="fas fa-skull-crossbones"></i> 坏结局</h2><p class="card-text">时间耗尽/关键错误！装置爆炸！你从废墟中爬出，森林已成水晶坟墓。皮卡丘用最后力量保护你，化作石像。手表显示：“新守护者已绑定...永恒守望开始...”</p></div>`;
+                        break;
+                }
+                App.dom.sceneContentEl.innerHTML = endingContent;
+                App.dom.sceneListEl.innerHTML = '<h2 class="scene-selector-title">游戏结束</h2>';
+            }
+        },
+        
+        // =============================================================================
+        // MODULE: PUZZLES (谜题逻辑模块)
+        // =============================================================================
+        puzzles: {
+            lock: {
+                render() {
+                    if (App.state.puzzles.lock_solved) { App.ui.showNotice('背包已经被打开了。', 'var(--secondary)'); return; }
+                    const lockSymbols = ['🔥', '💧', '🌿', '⚡', '🦅', '🌍', '4', '7', '1', '⚙️', '...', '❓'];
+                    App.state.puzzles.lock_symbols = lockSymbols;
+                    App.state.puzzles.lock_rings = [0,0,0,0].map(() => Math.floor(Math.random() * lockSymbols.length));
+                    
+                    const fragment = document.createDocumentFragment();
+                    const container = document.createElement('div');
+                    container.className = 'puzzle-container';
+                    container.innerHTML = `<h3 class="puzzle-title">研究员背包密码锁</h3><div class="rotary-lock-container">${[0,1,2,3].map(i => `<div class="rotary-dial"><div class="rotary-pointer"></div><div class="rotary-ring" id="ring-${i}">
+                                        <div class="rotary-ring-inner" style="transform: rotate(-${App.state.puzzles.lock_rings[i] * (360 / lockSymbols.length)}deg)">
+                                            ${lockSymbols.map((s, index) => `<div class="rotary-symbol" style="transform: rotate(${index * (360 / lockSymbols.length)}deg) translate(0, -40px) rotate(${-index * (360 / lockSymbols.length)}deg);">${s}</div>`).join('')}
+                                        </div>
+                                    </div></div>`).join('')}</div><div class="choices-grid"><button class="choice-btn" style="background-color: #2ecc71" onclick="App.core.handleChoice(event, {action: 'check_lock'})"><i class="fas fa-check"></i> 解锁</button></div>`;
+                    fragment.appendChild(container);
+                    
+                    const tempDiv = document.createElement('div');
+                    tempDiv.appendChild(fragment);
+                    return tempDiv.innerHTML;
+                },
+                addDragListeners() {
+                    const rings = document.querySelectorAll('.rotary-ring');
+                    rings.forEach((ring, index) => {
+                        let isDragging = false, startAngle = 0;
+                        const symbolCount = App.state.puzzles.lock_symbols.length;
+                        let currentAngle = -App.state.puzzles.lock_rings[index] * (360 / symbolCount);
+                        const ringInner = ring.querySelector('.rotary-ring-inner');
+                        ringInner.style.transform = `rotate(${currentAngle}deg)`;
+
+                        const getAngle = (e) => {
+                            const rect = ring.getBoundingClientRect();
+                            const centerX = rect.left + rect.width / 2;
+                            const centerY = rect.top + rect.height / 2;
+                            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                            return Math.atan2(clientY - centerY, clientX - centerX) * (180 / Math.PI);
+                        };
+                        
+                        const startDrag = (e) => { e.preventDefault(); isDragging = true; startAngle = getAngle(e) - currentAngle; ringInner.style.transition = 'none';};
+                        const drag = App.utils.throttle((e) => {
+                            if (!isDragging) return;
+                            e.preventDefault();
+                            currentAngle = getAngle(e) - startAngle;
+                            ringInner.style.transform = `rotate(${currentAngle}deg)`;
+                        }, 16); // 节流，大约60fps
+                        const endDrag = () => {
+                            if (!isDragging) return;
+                            isDragging = false;
+                            const anglePerSymbol = 360 / symbolCount;
+                            let closestIndex = Math.round(-currentAngle / anglePerSymbol);
+                            closestIndex = (closestIndex % symbolCount + symbolCount) % symbolCount;
+                            App.state.puzzles.lock_rings[index] = closestIndex;
+                            currentAngle = -closestIndex * anglePerSymbol;
+                            ringInner.style.transition = 'transform 0.3s ease';
+                            ringInner.style.transform = `rotate(${currentAngle}deg)`;
+                        };
+                        
+                        App.utils.addEventListener(ring, 'mousedown', startDrag);
+                        App.utils.addEventListener(window, 'mousemove', drag);
+                        App.utils.addEventListener(window, 'mouseup', endDrag);
+                        App.utils.addEventListener(ring, 'touchstart', startDrag, { passive: false });
+                        App.utils.addEventListener(window, 'touchmove', drag, { passive: false });
+                        App.utils.addEventListener(window, 'touchend', endDrag);
+                    });
+                },
+                checkSolution() {
+                    if (App.state.isActionInProgress) return;
+                    App.state.isActionInProgress = true;
+                    
+                    const { lock_rings, lock_symbols } = App.state.puzzles;
+                    const currentSymbols = lock_rings.map(ringIndex => lock_symbols[ringIndex]);
+                    const isCorrect = currentSymbols.join('') === '🔥💧🌿7';
+
+                    if (isCorrect) {
+                        App.soundManager.showSuccess('密码正确！');
+                        App.state.puzzles.lock_solved = true;
+                        App.ui.updateOverallProgress();
+                        App.core.unlockNextChapter(App.config.SCENE_IDS.CHAPTER2);
+                        App.core.unlockNextChapter(App.config.SCENE_IDS.CHAPTER3);
+                    } else {
+                        App.ui.showNotice('密码错误！背包发出警告声...', '#e74c3c');
+                        App.core.applyPenalty(App.config.PENALTY_SECONDS.LOCK_FAIL);
+                    }
+                    setTimeout(() => { App.state.isActionInProgress = false; }, 1000);
+                }
+            },
+            potion: {
+                generate() {
+                    const possibleRatios = [[3, 2, 1], [4, 1, 1]];
+                    let ratio = possibleRatios[Math.floor(Math.random() * possibleRatios.length)];
+                    App.state.puzzles.potion_ratio = ratio;
+                    const toRoman = num => ({1: 'Ⅰ', 2: 'Ⅱ', 3: 'Ⅲ', 4: 'Ⅳ', 5: 'Ⅴ'}[num] || num);
+                    let displayRatio = [...ratio].sort(() => Math.random() - 0.5);
+                    const ratioString = displayRatio.map(toRoman).join(' | ');
+                    App.data.scenes.chapter2.content = `<div class="content-card"><h2 class="card-title"><i class="fas fa-paw"></i> 森林的呼唤</h2><p class="card-text">跟随微弱的"皮卡...丘..."声，你深入雾气弥漫的橡树林。在闪着蓝光的蘑菇圈中央，一只皮卡丘前肢受伤，身边散落着三种药草，以及一些你不认识的植物。当你靠近时，它警惕地竖起耳朵，尾巴在地面划出奇怪的图案：<b>${ratioString}</b></p><div id="puzzle-container"></div><div class="choices-grid"><button class="choice-btn" id="get-recipe-btn" data-clue-id="potion_recipe" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'potion_recipe' })"><i class="fas fa-scroll"></i> 检查树皮刻痕</button><button class="choice-btn" id="mix-potion-btn" disabled onclick="App.core.handleChoice(event, { action: 'render_puzzle', payload: 'potion_puzzle' })"><i class="fas fa-mortar-pestle"></i> 尝试调配药剂</button><button class="choice-btn" id="get-log-btn" data-clue-id="dark_team_log1" onclick="App.core.handleChoice(event, { action: 'get_clue', payload: 'dark_team_log1' })"><i class="fas fa-fire-alt"></i> 调查烧焦的纸片</button></div></div>`;
+                },
+                render() {
+                    if (App.state.puzzles.potion_solved) { App.ui.showNotice('你已经成功治疗了皮卡丘。', 'var(--secondary)'); return; }
+                    const ingredients = [ {id: 'herb1', name: '日之叶'}, {id: 'herb2', name: '月之泪'}, {id: 'herb3', name: '星之粉'}, {id: 'herb4', name: '发光蘑菇'}, {id: 'herb5', name: '奇异根茎'} ].sort(() => Math.random() - 0.5);
+                    return `<div class="puzzle-container"><h3 class="puzzle-title">药草调配台</h3><div class="potion-mixer">
+                        ${ingredients.map(ing => `
+                        <div class="potion-ingredient"><h4>${ing.name}</h4><div class="count" id="${ing.id}-count">${App.state.puzzles.potion_mix[ing.id] || 0}</div><div class="ingredient-controls"><button class="choice-btn control-btn" onclick="App.core.handleChoice(event, {action:'change_ingredient', payload: {item: '${ing.id}', amount: -1}})">-</button><button class="choice-btn control-btn" onclick="App.core.handleChoice(event, {action:'change_ingredient', payload: {item: '${ing.id}', amount: 1}})">+</button></div></div>
+                        `).join('')}
+                    </div><div class="choices-grid"><button class="choice-btn" style="background-color: var(--scene-color-2)" onclick="App.core.handleChoice(event, {action: 'mix_potion'})">开始调配</button></div></div>`;
+                },
+                changeIngredient(item, amount) {
+                    const currentValue = App.state.puzzles.potion_mix[item];
+                    const newValue = currentValue + amount;
+                    if (newValue >= 0 && newValue <= 9) {
+                        App.state.puzzles.potion_mix[item] = newValue;
+                        document.getElementById(`${item}-count`).textContent = newValue;
+                    }
+                },
+                checkMix() {
+                    if (App.state.isActionInProgress) return;
+                    App.state.isActionInProgress = true;
+
+                    const { potion_mix, potion_ratio } = App.state.puzzles;
+                    const correctIngredients = ['herb1', 'herb2', 'herb3'];
+                    const incorrectIngredients = ['herb4', 'herb5'];
+                    
+                    const correctSum = correctIngredients.reduce((sum, key) => sum + potion_mix[key], 0);
+                    const usedValues = correctIngredients.map(key => potion_mix[key]).sort((a,b) => b-a);
+                    const isRatioCorrect = JSON.stringify(usedValues) === JSON.stringify([...potion_ratio].sort((a,b) => b-a));
+                    const usedIncorrect = incorrectIngredients.some(key => potion_mix[key] > 0);
+                    const isCorrect = correctSum === 6 && isRatioCorrect && !usedIncorrect;
+
+                    if (isCorrect) {
+                        App.soundManager.showSuccess('药剂调配成功！');
+                        App.state.puzzles.potion_solved = true;
+                        App.ui.updateOverallProgress();
+                        App.core.addClue(null, 'ancient_amulet');
+                        App.core.checkAndUnlockNextPhase();
+                    } else {
+                        App.ui.showNotice('错误的配方！药剂散发出诡异的黑气...', '#e74c3c');
+                        App.core.applyPenalty(App.config.PENALTY_SECONDS.POTION_FAIL);
+                    }
+                    setTimeout(() => { App.state.isActionInProgress = false; }, 1000);
+                }
+            },
+            jigsaw: {
+                render() {
+                    if (App.state.puzzles.jigsaw_solved) { App.ui.showNotice('壁画已经修复了！', 'var(--secondary)'); return; }
+                    const pieces = Array.from({length: 9}, (_, i) => i).sort(() => Math.random() - 0.5);
+                    return `<div class="puzzle-container">
+                        <h3 class="puzzle-title">修复古代壁画</h3>
+                        <div class="jigsaw-container">
+                            <div class="jigsaw-board" id="jigsaw-board">
+                                ${Array.from({length: 9}, (_, i) => `<div class="jigsaw-slot" data-slot-id="${i}"></div>`).join('')}
+                            </div>
+                            <div class="jigsaw-pieces" id="jigsaw-pieces">
+                                ${pieces.map(p => `<div class="jigsaw-piece" draggable="true" data-piece-id="${p}"></div>`).join('')}
+                            </div>
+                        </div>
+                    </div>`;
+                },
+                addDragListeners() {
+                    const pieces = document.querySelectorAll('.jigsaw-piece');
+                    const slots = document.querySelectorAll('.jigsaw-slot');
+                    let draggedPiece = null;
+
+                    pieces.forEach(piece => {
+                        piece.style.backgroundImage = `url('https://placehold.co/300x300/9b59b6/ffffff?text=壁画')`;
+                        const pieceId = piece.dataset.pieceId;
+                        const x = (pieceId % 3) * -100;
+                        const y = Math.floor(pieceId / 3) * -100;
+                        piece.style.backgroundPosition = `${x}px ${y}px`;
+
+                        App.utils.addEventListener(piece, 'dragstart', (e) => {
+                            draggedPiece = e.target;
+                            setTimeout(() => e.target.classList.add('dragging'), 0);
+                        });
+                        App.utils.addEventListener(piece, 'dragend', (e) => {
+                            e.target.classList.remove('dragging');
+                        });
+                    });
+
+                    slots.forEach(slot => {
+                        App.utils.addEventListener(slot, 'dragover', (e) => e.preventDefault());
+                        App.utils.addEventListener(slot, 'drop', (e) => {
+                            e.preventDefault();
+                            if (draggedPiece && e.target.classList.contains('jigsaw-slot') && !e.target.hasChildNodes()) {
+                                if (draggedPiece.dataset.pieceId === e.target.dataset.slotId) {
+                                    // FIX: Removed lines that set the background image on the slot.
+                                    e.target.classList.add('correct');
+                                    draggedPiece.classList.add('placed');
+                                    draggedPiece.draggable = false;
+                                    App.state.puzzles.jigsaw_placed++;
+                                    if (App.state.puzzles.jigsaw_placed === 9) {
+                                        App.soundManager.showSuccess('壁画已修复！');
+                                        App.state.puzzles.jigsaw_solved = true;
+                                        App.ui.updateOverallProgress();
+                                        App.core.checkAndUnlockNextPhase();
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+            },
+            circuit: {
+                generate() {
+                    const circuitState = App.state.puzzles.circuit;
+                    if (circuitState.wires.length > 0) return; 
+
+                    Object.assign(circuitState, {
+                        wires: [], solution: {}, correctActions: [], pokemon: null,
+                        selectedTool: 'cutter', actions: {},
+                    });
+
+                    const pokemonNames = Object.keys(App.data.circuitV2Data.PUZZLE_SOLUTIONS);
+                    const selectedPokemonName = pokemonNames[Math.floor(Math.random() * pokemonNames.length)];
+                    const selectedPokemonData = App.data.circuitV2Data.POKEMON.find(p => p.name === selectedPokemonName);
+                    const solutionData = App.data.circuitV2Data.PUZZLE_SOLUTIONS[selectedPokemonName];
+
+                    circuitState.pokemon = selectedPokemonData;
+                    
+                    const solutionMapping = {};
+                    solutionData.cut.forEach(type => solutionMapping[type] = 'cut');
+                    solutionData.connect.forEach(type => solutionMapping[type] = 'connect');
+                    solutionData.absorb.forEach(type => solutionMapping[type] = 'absorb');
+                    circuitState.solution = solutionMapping;
+                    
+                    const allTypes = Object.keys(App.data.circuitV2Data.TYPE_NAMES);
+                    allTypes.sort(() => Math.random() - 0.5).forEach((type, index) => {
+                        circuitState.wires.push({ id: index, type: type, state: 'default' });
+                        if (solutionMapping[type]) {
+                            circuitState.correctActions.push(index);
+                        }
+                    });
+
+                    let goalText = [];
+                    if (solutionData.cut.length > 0) goalText.push(`剪断 ${solutionData.cut.length} 条线`);
+                    if (solutionData.connect.length > 0) goalText.push(`连接 ${solutionData.connect.length} 条线`);
+                    if (solutionData.absorb.length > 0) goalText.push(`吸收 ${solutionData.absorb.length} 条线`);
+                    
+                    if(App.data.clues.circuit_manual) {
+                        App.data.clues.circuit_manual.description = `紧急修复协议：${goalText.join('，')}。`;
+                    }
+                },
+                render() {
+                    return `
+                        <div id="circuit-v2-container" class="w-full max-w-5xl mx-auto bg-gray-800/80 rounded-2xl p-4 sm:p-6 border-4 border-gray-700/50">
+                            <div class="flex justify-between items-start bg-gray-900/50 rounded-lg p-3 sm:p-4 mb-4 border-2 border-gray-600 gap-4">
+                                <div id="pokemon-info" class="text-left">
+                                    <div class="text-sm text-gray-400">目标宝可梦</div>
+                                    <div id="pokemon-name" class="text-lg sm:text-2xl font-bold">---</div>
+                                    <div id="pokemon-types" class="flex flex-wrap gap-2 mt-1"></div>
+                                    <div id="pokemon-ability-container" class="mt-2 hidden">
+                                        <div class="text-sm text-gray-400">特性</div>
+                                        <div id="pokemon-ability" class="text-md sm:text-lg font-bold text-cyan-400"></div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-2">
+                                     <button onclick="App.core.handleChoice(event, {action: 'show_type_legend'})" class="tool-btn bg-green-500 hover:bg-green-600 p-2 rounded-lg shadow-lg text-white" title="图标说明"><i class="fas fa-info-circle"></i></button>
+                                     <button onclick="App.core.handleChoice(event, {action: 'show_pokedex'})" class="tool-btn bg-sky-500 hover:bg-sky-600 p-2 rounded-lg shadow-lg text-white" title="宝可梦图鉴"><i class="fas fa-desktop"></i></button>
+                                     <button onclick="App.core.handleChoice(event, {action: 'show_type_chart'})" class="tool-btn bg-indigo-500 hover:bg-indigo-600 p-2 rounded-lg shadow-lg text-white" title="属性克制图"><i class="fas fa-th"></i></button>
+                                </div>
+                            </div>
+                            <div id="circuit-board-container" class="bg-black/50 rounded-lg p-4 relative aspect-video border-2 border-gray-600">
+                                <svg id="circuit-board" class="w-full h-full"></svg>
+                            </div>
+                            <div class="mt-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div id="status-message" class="text-lg font-bold text-yellow-400 h-8 flex items-center text-center md:text-left notice-text"></div>
+                                <div class="flex flex-wrap justify-center items-center gap-2 sm:gap-4">
+                                    <div class="font-bold text-gray-300 ml-2">主工具:</div>
+                                    <button id="cutter-tool" class="tool-btn bg-red-600 hover:bg-red-700 p-3 rounded-lg shadow-lg text-white"><i class="fas fa-cut"></i></button>
+                                    <button id="connector-tool" class="tool-btn bg-blue-600 hover:bg-blue-700 p-3 rounded-lg shadow-lg text-white"><i class="fas fa-link"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                },
+                initializeUI() {
+                    const circuitState = App.state.puzzles.circuit;
+                    const dom = {
+                        container: document.getElementById('circuit-v2-container'),
+                        pokemonName: document.getElementById('pokemon-name'),
+                        pokemonTypes: document.getElementById('pokemon-types'),
+                        pokemonAbilityContainer: document.getElementById('pokemon-ability-container'),
+                        pokemonAbility: document.getElementById('pokemon-ability'),
+                        board: document.getElementById('circuit-board'),
+                        cutterTool: document.getElementById('cutter-tool'),
+                        connectorTool: document.getElementById('connector-tool'),
+                    };
+
+                    const renderWires = () => {
+                        if (!dom.board) return;
+                        dom.board.innerHTML = '';
+                        const width = dom.board.clientWidth;
+                        const height = dom.board.clientHeight;
+                        const iconRadius = Math.min(18, height / 40); 
+                        const startX = iconRadius + 10;
+                        const endX = width - iconRadius - 10;
+
+                        const fragment = document.createDocumentFragment();
+                        circuitState.wires.forEach((wire, i) => {
+                            const y = height * (0.05 + (i * (0.9 / circuitState.wires.length)));
+                            const color = App.data.circuitV2Data.TYPE_COLORS[wire.type];
+                            const svgIcon = App.data.circuitV2Data.TYPE_SVG_ICONS[wire.type];
+
+                            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                            g.classList.add('circuit-wire-group'); g.dataset.id = wire.id;
+                            g.onclick = () => this.handleWireClick(wire.id);
+
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', startX); line.setAttribute('y1', y);
+                            line.setAttribute('x2', endX); line.setAttribute('y2', y);
+                            line.setAttribute('stroke', color); line.setAttribute('stroke-width', '10');
+                            line.setAttribute('stroke-linecap', 'round'); line.classList.add('circuit-wire');
+                            
+                            const createIcon = (cx) => {
+                                const iconGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                                const iconBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                                iconBg.setAttribute('cx', cx); iconBg.setAttribute('cy', y);
+                                iconBg.setAttribute('r', iconRadius); iconBg.setAttribute('fill', color);
+                                if(cx === endX) iconBg.classList.add('circuit-terminal', 'circuit-terminal-end');
+                                const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                                const svgSize = iconRadius * 1.5;
+                                iconSvg.setAttribute('x', cx - svgSize / 2); iconSvg.setAttribute('y', y - svgSize / 2);
+                                iconSvg.setAttribute('width', svgSize); iconSvg.setAttribute('height', svgSize);
+                                iconSvg.setAttribute('viewBox', '0 0 24 24'); iconSvg.style.fill = 'white';
+                                iconSvg.innerHTML = svgIcon;
+                                iconGroup.appendChild(iconBg); iconGroup.appendChild(iconSvg);
+                                return iconGroup;
+                            };
+                            
+                            g.appendChild(line);
+                            g.appendChild(createIcon(startX));
+                            g.appendChild(createIcon(endX));
+                            fragment.appendChild(g);
+                        });
+                        dom.board.appendChild(fragment);
+                    };
+
+                    if (!dom.container) return;
+                    if (!circuitState.pokemon) this.generate();
+
+                    dom.pokemonName.textContent = circuitState.pokemon.name;
+                    dom.pokemonTypes.innerHTML = circuitState.pokemon.types.map(type => `<span class="px-2 py-1 text-sm font-bold rounded" style="background-color: ${App.data.circuitV2Data.TYPE_COLORS[type]}; color: white; text-shadow: 1px 1px 2px black;">${App.data.circuitV2Data.TYPE_NAMES[type]}</span>`).join('');
+                    if (circuitState.pokemon.abilityDescription) {
+                        dom.pokemonAbilityContainer.classList.remove('hidden');
+                        dom.pokemonAbility.innerHTML = `${circuitState.pokemon.abilityName}`;
+                    } else {
+                        dom.pokemonAbilityContainer.classList.add('hidden');
+                    }
+                    
+                    requestAnimationFrame(renderWires);
+                    this.selectTool('cutter');
+                    dom.cutterTool.onclick = () => this.selectTool('cutter');
+                    dom.connectorTool.onclick = () => this.selectTool('connector');
+                },
+                handleWireClick(id) {
+                    const circuitState = App.state.puzzles.circuit;
+                    const wire = circuitState.wires.find(w => w.id === id);
+                    if (App.state.gameEnded || !wire || wire.state !== 'default') return;
+                    
+                    App.soundManager.play(App.config.SOUNDS.CLICK);
+
+                    const wireGroup = document.querySelector(`.circuit-wire-group[data-id='${id}']`);
+                    const requiredAction = circuitState.solution[wire.type];
+                    let isCorrectAction = false;
+
+                    if (!requiredAction) {
+                        isCorrectAction = false;
+                    } else if (requiredAction === 'cut' && circuitState.selectedTool === 'cutter') {
+                        isCorrectAction = true;
+                    } else if ((requiredAction === 'connect' || requiredAction === 'absorb') && circuitState.selectedTool === 'connector') {
+                        isCorrectAction = true;
+                    }
+
+                    if (isCorrectAction) {
+                        wire.state = circuitState.selectedTool === 'cutter' ? 'cut' : (requiredAction === 'absorb' ? 'absorbed' : 'connected');
+                        circuitState.actions[id] = wire.state;
+                        App.ui.showNotice('操作正确！', '#4ade80');
+                        wireGroup.classList.add(wire.state);
+                    } else {
+                        App.ui.showNotice('操作错误！电路不稳定！', '#f87171');
+                        const container = document.getElementById('circuit-v2-container');
+                        if(container) {
+                            container.classList.add('shake');
+                            setTimeout(() => container.classList.remove('shake'), 500);
+                        }
+                        App.core.applyPenalty(App.config.PENALTY_SECONDS.CIRCUIT_FAIL);
+                    }
+                    this.checkCompletion();
+                },
+                checkCompletion() {
+                    const { actions, correctActions } = App.state.puzzles.circuit;
+                    const performedActions = Object.keys(actions).length;
+
+                    if (performedActions < correctActions.length) return;
+
+                    const allActionsMatch = correctActions.every(id => {
+                        const wire = App.state.puzzles.circuit.wires[id];
+                        const required = App.state.puzzles.circuit.solution[wire.type];
+                        const performed = actions[id];
+                        if (required === 'cut') return performed === 'cut';
+                        if (required === 'connect') return performed === 'connected';
+                        if (required === 'absorb') return performed === 'absorbed';
+                        return false;
+                    });
+
+                    if (allActionsMatch && performedActions === correctActions.length) {
+                        App.soundManager.showSuccess('装置已解除！');
+                        App.state.puzzles.circuit_solved = true;
+                        App.ui.updateOverallProgress();
+                        setTimeout(() => App.core.unlockNextChapter(App.config.SCENE_IDS.CHAPTER5), 1500);
+                    } else {
+                        App.ui.showNotice('操作组合错误！请重新检查。', '#f87171');
+                        App.core.applyPenalty(App.config.PENALTY_SECONDS.CIRCUIT_FAIL);
+                    }
+                },
+                selectTool(tool) {
+                    App.state.puzzles.circuit.selectedTool = tool;
+                    document.getElementById('cutter-tool').classList.toggle('active', tool === 'cutter');
+                    document.getElementById('connector-tool').classList.toggle('active', tool === 'connector');
+                },
+                showRules() {
+                    const content = `
+                        <ul class="list-disc list-inside space-y-3 text-lg">
+                            <li><strong>目标:</strong> 根据任务提示，修复所有需要操作的能量线路。</li>
+                            <li><strong>剪断线路 (红色剪刀):</strong> 用于处理对目标宝可梦【效果绝佳】的能量。</li>
+                            <li><strong>连接线路 (蓝色链条):</strong> 用于处理目标宝可梦可以【抵抗】或【吸收】的能量。</li>
+                            <li><strong>陷阱线路:</strong> 任何【普通效果】或【免疫】的线路都是陷阱，操作它们会浪费宝贵的时间！</li>
+                            <li><strong>提示:</strong> 仔细阅读任务目标，并利用图鉴和属性克制表来判断正确的操作！</li>
+                        </ul>
+                    `;
+                    App.ui.showGenericModal("玩法说明", content, false, 'max-w-3xl');
+                },
+                showTypeLegend() {
+                    const allTypes = Object.keys(App.data.circuitV2Data.TYPE_NAMES);
+                    const content = `<div class="attribute-grid">${allTypes.map(t_key => {
+                        const typeData = App.data.circuitV2Data;
+                        return `<div class="attribute-item" style="border-left: 5px solid ${typeData.TYPE_COLORS[t_key]};">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="${typeData.TYPE_COLORS[t_key]}">${typeData.TYPE_SVG_ICONS[t_key]}</svg>
+                                    <span>${typeData.TYPE_NAMES[t_key]}</span>
+                                </div>`
+                    }).join('')}</div>`;
+                    App.ui.showGenericModal("属性图标说明", content, false, 'max-w-3xl');
+                },
+                showPokedex() {
+                    const pkmn = App.state.puzzles.circuit.pokemon;
+                    if (!pkmn) return;
+                    const typesHTML = pkmn.types.map(type => `<span class="px-3 py-1 text-sm font-semibold rounded-full" style="background-color:${App.data.circuitV2Data.TYPE_COLORS[type]}; color: white;">${App.data.circuitV2Data.TYPE_NAMES[type]}</span>`).join(' ');
+                    const content = `
+                        <div class="flex flex-col items-center">
+                            <h3 class="text-2xl font-bold">${pkmn.name}</h3>
+                            <div class="my-2">${typesHTML}</div>
+                            <div class="mt-4 text-left w-full">
+                                <h4 class="font-bold text-cyan-400 text-lg">特性: ${pkmn.abilityName}</h4>
+                                <p class="text-gray-300 mt-1">${pkmn.abilityDescription}</p>
+                            </div>
+                        </div>
+                    `;
+                    App.ui.showGenericModal("宝可梦图鉴", content, false, 'max-w-lg');
+                },
+                showTypeChart() {
+                    const types = Object.keys(App.data.circuitV2Data.TYPE_NAMES);
+                    let table = '<div class="type-chart-grid" style="grid-template-columns: 40px repeat(18, minmax(35px, 1fr));">';
+                    table += '<div class="type-chart-cell bg-gray-700">⚔️\\🛡️</div>';
+                    types.forEach(def => {
+                        table += `<div class="type-chart-cell" style="background-color: ${App.data.circuitV2Data.TYPE_COLORS[def]}40;"><svg width="24" height="24" viewBox="0 0 24 24" fill="white">${App.data.circuitV2Data.TYPE_SVG_ICONS[def]}</svg></div>`;
+                    });
+                    types.forEach(atk => {
+                        table += `<div class="type-chart-cell" style="background-color: ${App.data.circuitV2Data.TYPE_COLORS[atk]}40;"><svg width="24" height="24" viewBox="0 0 24 24" fill="white">${App.data.circuitV2Data.TYPE_SVG_ICONS[atk]}</svg></div>`;
+                        types.forEach(def => {
+                            const eff = App.data.circuitV2Data.TYPE_CHART[def]?.[atk];
+                            let cellContent = '1'; let bgColor = '#4A5568';
+                            if (eff === 2) { cellContent = '◎'; bgColor = '#2F855A'; }
+                            else if (eff === 0.5) { cellContent = '△'; bgColor = '#B83227'; }
+                            else if (eff === 0) { cellContent = '×'; bgColor = '#1A202C'; }
+                            table += `<div class="type-chart-cell" style="background-color: ${bgColor}">${cellContent}</div>`;
+                        });
+                    });
+                    table += '</div>';
+                    const legend = `
+                        <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
+                            <span><span class="font-bold text-green-400">◎</span>: 效果绝佳 (2x)</span>
+                            <span><span class="font-bold text-gray-400">1</span>: 普通效果 (1x)</span>
+                            <span><span class="font-bold text-red-400">△</span>: 效果不理想 (0.5x)</span>
+                            <span><span class="font-bold text-gray-600">×</span>: 没有效果 (0x)</span>
+                        </div>
+                    `;
+                    App.ui.showGenericModal("属性克制图", table + legend, false, 'max-w-7xl');
+                }
+            }
+        },
+
+        // =============================================================================
+        // MODULE: SOUND MANAGER (音效与视觉效果模块)
+        // =============================================================================
+        soundManager: {
+            isMusicPlaying: false,
+            // Synths for different parts of the music
+            leadSynth: null,
+            bassSynth: null,
+            // General purpose synths for sound effects
+            sfxSynth: null,
+            sfxPolySynth: null,
+            // Music sequences
+            melody: null,
+            bass: null,
+            soundCooldowns: {},
+
+            _initAudio() {
+                if (this.sfxSynth) return; // Already initialized
+
+                // --- Sound Effect Synths ---
+                this.sfxSynth = new Tone.Synth({
+                    oscillator: { type: 'square' },
+                    envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 }
+                }).toDestination();
+                
+                this.sfxPolySynth = new Tone.PolySynth(Tone.Synth, {
+                     oscillator: { type: 'triangle' },
+                     envelope: { attack: 0.005, decay: 0.1, sustain: 0.2, release: 0.1 }
+                }).toDestination();
+
+                // --- Music Synths ---
+                const reverb = new Tone.Reverb(0.75).toDestination();
+                this.leadSynth = new Tone.FMSynth({
+                    harmonicity: 3.01,
+                    modulationIndex: 14,
+                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.4 },
+                    modulation: { type: "square" },
+                    modulationEnvelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.5 }
+                }).connect(reverb);
+
+                this.bassSynth = new Tone.MonoSynth({
+                    oscillator: { type: "sawtooth" },
+                    envelope: { attack: 0.05, decay: 0.3, sustain: 0.4, release: 0.8 },
+                    filter: { Q: 2, type: "lowpass", rolloff: -24 },
+                    filterEnvelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1, baseFrequency: 400, octaves: 4 }
+                }).toDestination();
+            },
+
+            startMusic() {
+                if (this.melody || Tone.context.state !== 'suspended') return;
+                
+                Tone.start().then(() => {
+                    this._initAudio();
+                    
+                    // --- Music Composition ---
+                    this.melody = new Tone.Sequence((time, note) => {
+                        this.leadSynth.triggerAttackRelease(note, "8n", time);
+                    }, [
+                        'G4', 'E4', 'G4', 'A4', 'G4', 'E4', 'C4', null,
+                        'A4', 'F4', 'A4', 'B4', 'A4', 'F4', 'D4', null
+                    ], "8n");
+
+                    this.bass = new Tone.Sequence((time, note) => {
+                        this.bassSynth.triggerAttackRelease(note, "4n", time);
+                    }, ['C3', 'G2', 'D3', 'A2'], "2n");
+
+                    this.melody.start(0);
+                    this.bass.start(0);
+
+                    Tone.Transport.bpm.value = 140;
+                    Tone.Transport.start();
+                    this.isMusicPlaying = true;
+                });
+            },
+            toggleMusic() {
+                if (!this.melody) { this.startMusic(); return; }
+                this.isMusicPlaying = !this.isMusicPlaying;
+                if (this.isMusicPlaying) Tone.Transport.start();
+                else Tone.Transport.pause();
+                const icon = document.querySelector('#music-toggle-btn i');
+                icon.className = `fas ${this.isMusicPlaying ? 'fa-volume-up' : 'fa-volume-mute'}`;
+            },
+            play(sound) {
+                const now = Date.now();
+                if (this.soundCooldowns[sound] && now - this.soundCooldowns[sound] < 100) return;
+                this.soundCooldowns[sound] = now;
+
+                const playSound = () => {
+                    this._initAudio();
+                    
+                    const sounds = {
+                        [App.config.SOUNDS.CLICK]: () => this.sfxSynth.triggerAttackRelease("C6", "32n"),
+                        [App.config.SOUNDS.GET_CLUE]: () => this.sfxPolySynth.triggerAttackRelease(["C5", "E5", "G5"], "16n"),
+                        [App.config.SOUNDS.PUZZLE_SUCCESS]: () => {
+                             new Tone.Sequence((time, note) => {
+                                this.sfxPolySynth.triggerAttackRelease(note, "8n", time);
+                            }, ["C5", "E5", "G5", "C6"], "8n").start().stop('0:3');
+                        },
+                        [App.config.SOUNDS.PUZZLE_FAIL]: () => this.bassSynth.triggerAttackRelease("A1", "8n"),
+                        [App.config.SOUNDS.PENALTY]: () => this.bassSynth.triggerAttackRelease("G#1", "4n"),
+                    };
+                    
+                    if(sounds[sound]) {
+                        sounds[sound]();
+                    }
+                };
+
+                if (Tone.context.state !== 'running') {
+                    Tone.start().then(playSound).catch(e => console.error("Tone.js failed to start", e));
+                } else {
+                    playSound();
+                }
+            },
+            showSuccess(text) {
+                this.play(App.config.SOUNDS.PUZZLE_SUCCESS);
+                const effect = document.createElement('div');
+                effect.className = 'fullscreen-effect success-flash';
+                effect.innerHTML = `<div class="effect-text">${text}</div>`;
+                App.dom.effectsContainerEl.appendChild(effect);
+                setTimeout(() => effect.remove(), 1000);
+            },
+            showClue(text) {
+                this.play(App.config.SOUNDS.GET_CLUE);
+                const effect = document.createElement('div');
+                effect.className = 'fullscreen-effect clue-get-flash';
+                effect.innerHTML = `<div class="effect-text">获得线索: ${text}</div>`;
+                App.dom.effectsContainerEl.appendChild(effect);
+                setTimeout(() => effect.remove(), 1000);
+            }
+        },
+
+        // =============================================================================
+        // MODULE: UTILS (通用工具函数模块)
+        // =============================================================================
+        utils: {
+            throttle(func, limit) {
+                let inThrottle;
+                return function() {
+                    const args = arguments;
+                    const context = this;
+                    if (!inThrottle) {
+                        func.apply(context, args);
+                        inThrottle = true;
+                        setTimeout(() => inThrottle = false, limit);
+                    }
+                }
+            },
+            addEventListener(target, type, handler, options = false) {
+                target.addEventListener(type, handler, options);
+                App.state.eventListeners.push({ target, type, handler, options });
+            },
+            removeAllEventListeners() {
+                App.state.eventListeners.forEach(({ target, type, handler, options }) => {
+                    target.removeEventListener(type, handler, options);
+                });
+                App.state.eventListeners = [];
+            }
+        }
+    };
+    
+    // =============================================================================
+    // INITIALIZATION (游戏初始化)
+    // =============================================================================
+    window.addEventListener('DOMContentLoaded', () => App.core.init());
+
+    </script>
+</body>
+</html>
